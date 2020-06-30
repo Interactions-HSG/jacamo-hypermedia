@@ -1,4 +1,4 @@
-package tools;
+package wot;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,7 +38,7 @@ import ch.unisg.ics.interactions.wot.td.vocabularies.WoTSec;
  *
  */
 public class ThingArtifact extends Artifact {
-  private ThingDescription td;
+  protected ThingDescription td;
   private Optional<String> apiKey;
   private boolean dryRun;
   
@@ -100,7 +100,7 @@ public class ThingArtifact extends Artifact {
       OpFeedbackParam<Object[]> output) {
     readProperty(semanticType, Optional.of(tags), output);
   }
-  
+
   /**
    * CArtAgO operation for writing a property of a Thing using a semantic model of the Thing.
    * 
@@ -139,6 +139,17 @@ public class ThingArtifact extends Artifact {
    * CArtAgO operation for invoking an action on a Thing using a semantic model of the Thing.
    * 
    * @param semanticType An IRI that identifies the action type.
+   * @param payload The payload to be issued when invoking the action.
+   */
+  @OPERATION
+  public void invokeAction(String semanticType, Object[] payload) {
+    invokeAction(semanticType, new Object[0], payload);
+  }
+  
+  /**
+   * CArtAgO operation for invoking an action on a Thing using a semantic model of the Thing.
+   * 
+   * @param semanticType An IRI that identifies the action type.
    * @param tags A list of IRIs that identify parameters sent in the payload. Used for object schemas.
    * @param payload The payload to be issued when invoking the action.
    */
@@ -170,17 +181,6 @@ public class ThingArtifact extends Artifact {
     } else {
       failed("Unknown action: " + semanticType);
     }
-  }
-  
-  /**
-   * CArtAgO operation for invoking an action on a Thing using a semantic model of the Thing.
-   * 
-   * @param semanticType An IRI that identifies the action type.
-   * @param payload The payload to be issued when invoking the action.
-   */
-  @OPERATION
-  public void invokeAction(String semanticType, Object[] payload) {
-    invokeAction(semanticType, new Object[0], payload);
   }
   
   /**
@@ -243,6 +243,18 @@ public class ThingArtifact extends Artifact {
     return request;
   }
   
+  /* Matches the entire 2XX class */
+  private boolean requestSucceeded(int statusCode) {
+    return statusCode >= 200 && statusCode < 300;
+  }
+  
+  
+  private void validateParameters(String semanticType, Object[] tags, Object[] payload) {
+    if (tags.length > 0 && tags.length != payload.length) {
+      failed("Illegal arguments: the lists of tags and action parameters should have equal length.");
+    }
+  }
+  
   private void readProperty(String semanticType, Optional<OpFeedbackParam<Object[]>> tags, 
       OpFeedbackParam<Object[]> output) {
     PropertyAffordance property = getFirstPropertyOrFail(semanticType);
@@ -259,17 +271,6 @@ public class ThingArtifact extends Artifact {
       } else {
         failed("Status code: " + response.get().getStatusCode());
       }
-    }
-  }
-  
-  /* Matches the entire 2XX class */
-  private boolean requestSucceeded(int statusCode) {
-    return statusCode >= 200 && statusCode < 300;
-  }
-  
-  private void validateParameters(String semanticType, Object[] tags, Object[] payload) {
-    if (tags.length > 0 && tags.length != payload.length) {
-      failed("Illegal arguments: the lists of tags and action parameters should have equal length.");
     }
   }
   

@@ -1,6 +1,6 @@
-// Agent sample_agent in project ai4industry_jacamo
-
 /* Initial beliefs and rules */
+
+td_url("http://yggdrasil.andreiciortea.ro/environments/env1").
 
 /* Initial goals */
 
@@ -8,8 +8,11 @@
 
 /* Plans */
 
-+!start : true <- .print("hello world.").
++!start : td_url(Url) <-
+  .print("hello world.");
+  !load_environment("myenv", Url).
 
+{ include("inc/hypermedia.asl") }
 { include("$jacamoJar/templates/common-cartago.asl") }
 { include("$jacamoJar/templates/common-moise.asl") }
 

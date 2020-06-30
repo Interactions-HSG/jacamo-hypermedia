@@ -15,7 +15,7 @@
 mas jacamo_hypermedia {
 
     agent sample_agent
-    agent wot_agent
+//    agent wot_agent
 
 }
 
