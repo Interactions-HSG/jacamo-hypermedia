@@ -1,0 +1,102 @@
+[
+	{
+		"httpRequest": {
+			"method": "GET",
+			"path": "/forklift-robot/busy"
+		},
+		"httpResponse": {
+			"statusCode": 200,
+			"headers": {
+				"Content-Type": [ "application/json" ]
+			},
+			"body": "true"
+		}
+	},
+	{
+		"httpRequest": {
+			"method": "PUT",
+			"path": "/forklift-robot/busy",
+			"headers": {
+				"Content-Type": [ "application/json" ]
+			}
+		},
+		"httpResponse": {
+			"statusCode": 200
+		}
+	},
+	{
+		"httpRequest": {
+			"method": "GET",
+			"path": "/forklift-robot/position"
+		},
+		"httpResponse": {
+			"statusCode": 200,
+			"headers": {
+				"Content-Type": [ "application/json" ]
+			},
+			"body": "[30,50,60]"
+		}
+	},
+	{
+		"httpRequest": {
+			"method": "PUT",
+			"path": "/forklift-robot/position",
+			"headers": {
+				"Content-Type": [ "application/json" ]
+			}
+		},
+		"httpResponse": {
+			"statusCode": 200
+		}
+	},
+	{
+		"httpRequest": {
+			"method": "GET",
+			"path": "/forklift-robot/lastCarry"
+		},
+		"httpResponse": {
+			"statusCode": 200,
+			"headers": {
+				"Content-Type": [ "application/json" ]
+			},
+			"body": "{ \"sourcePosition\" : [30, 50, 70], \"targetPosition\" : [30, 60, 70] }"
+		}
+	},
+	{
+		"httpRequest": {
+			"method": "PUT",
+			"path": "/forklift-robot/lastCarry",
+			"headers": {
+				"Content-Type": [ "application/json" ]
+			}
+		},
+		"httpResponse": {
+			"statusCode": 200
+		}
+	},
+	{
+		"httpRequest": {
+			"method": "POST",
+			"path": "/forklift-robot/carry",
+			"headers": {
+				"Content-Type": [ "application/json" ]
+			}
+		},
+		"httpResponse": {
+			"statusCode": 200
+		}
+	},
+	{
+		"httpRequest": {
+			"method": "POST",
+			"path": "/forklift-robot/moveTo",
+			"headers": {
+				"Content-Type": [ "application/json" ],
+                "X-API-Key" : [ "test-token" ]
+			}
+		},
+		"httpResponse": {
+			"statusCode": 200
+		}
+	}
+]
