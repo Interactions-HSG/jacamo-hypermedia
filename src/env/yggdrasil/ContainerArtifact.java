@@ -13,19 +13,25 @@ import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.Models;
 
-import cartago.OPERATION;
-import cartago.OpFeedbackParam;
 import ch.unisg.ics.interactions.wot.td.ThingDescription;
 import ch.unisg.ics.interactions.wot.td.ThingDescription.TDFormat;
 import ch.unisg.ics.interactions.wot.td.io.TDGraphReader;
 import wot.ThingArtifact;
 
+/**
+ * A hypermedia artifact that can contain other artifacts. The containment relation is given by
+ * {@code eve:contains}. Contained artifacts are exposed as observable properties using by default
+ * the Jason functor "member" or one that is passed as an argument during artifact initialization.
+ * 
+ * @author Andrei Ciortea
+ *
+ */
 public class ContainerArtifact extends ThingArtifact {
   private IRI containerIRI;
   private Model graph;
   private ValueFactory rdf;
   
-  private String containmentProp;
+  private String containmentFunctor;
   private List<String> members;
   
   @Override
@@ -42,7 +48,7 @@ public class ContainerArtifact extends ThingArtifact {
     super.init(url);
     
     this.rdf = SimpleValueFactory.getInstance();
-    this.containmentProp = containmentProp;
+    this.containmentFunctor = containmentProp;
     this.members = new ArrayList<String>();
     
     if (td.getThingURI().isPresent() && td.getGraph().isPresent()) {
@@ -56,37 +62,12 @@ public class ContainerArtifact extends ThingArtifact {
     }
   }
   
-  @OPERATION
-  public void getWorkspaceIRIs(OpFeedbackParam<String[]> workspaceIRIs) {    
-    members = getMembers(graph, containerIRI);
-    
-    String[] workspaceIRIArray = new String[members.size()];
-    workspaceIRIs.set((String[]) members.toArray(workspaceIRIArray));
-  }
-  
-  @OPERATION
-  public void getEntityDetails(String entityIRI, OpFeedbackParam<String> name, 
-      OpFeedbackParam<String> webSubHubIRI, OpFeedbackParam<String[]> memberIRIs) {
-    
-    try {
-      ThingDescription td = TDGraphReader.readFromURL(TDFormat.RDF_TURTLE, entityIRI);
-      
-      name.set(td.getTitle());      
-      List<String> artifacts = getMembers(td.getGraph().get(), rdf.createIRI(entityIRI));
-      
-      String[] artifactIRIArray = new String[artifacts.size()];
-      memberIRIs.set((String[]) artifacts.toArray(artifactIRIArray));
-    } catch (IOException | NoSuchElementException e) {
-      failed(e.getMessage());
-    }
-  }
-  
   private void exposeWorkspaceProps() {
     for (String memberIRI : members) {
-      EntityMetadata data = new EntityMetadata(memberIRI);
+      MemberMetadata data = new MemberMetadata(memberIRI);
       
       // TODO: expose semantic types as well?
-      this.defineObsProperty(containmentProp, memberIRI, data.workspaceName);
+      this.defineObsProperty(containmentFunctor, memberIRI, data.workspaceName);
     }
   }
   
@@ -95,12 +76,12 @@ public class ContainerArtifact extends ThingArtifact {
         .stream().map(iri -> iri.stringValue()).collect(Collectors.toList());
   }
   
-  class EntityMetadata {
+  class MemberMetadata {
     String entityIRI;
     String workspaceName;
     List<String> memberIRIs;
     
-    EntityMetadata(String iri) {
+    MemberMetadata(String iri) {
       this.entityIRI = iri;
       
       try {

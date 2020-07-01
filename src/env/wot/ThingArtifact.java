@@ -121,7 +121,7 @@ public class ThingArtifact extends Artifact {
    */
   @OPERATION
   public void writeProperty(String semanticType, Object[] tags, Object[] payload) {
-    validateParameters(semanticType, tags, payload);
+    validateParameters(tags, payload);
     if (payload.length == 0) {
       failed("The payload used when writing a property cannot be empty.");
     }
@@ -155,7 +155,7 @@ public class ThingArtifact extends Artifact {
    */
   @OPERATION
   public void invokeAction(String semanticType, Object[] tags, Object[] payload) {
-    validateParameters(semanticType, tags, payload);
+    validateParameters(tags, payload);
     
     Optional<ActionAffordance> action = td.getFirstActionBySemanticType(semanticType);
     
@@ -249,7 +249,7 @@ public class ThingArtifact extends Artifact {
   }
   
   
-  private void validateParameters(String semanticType, Object[] tags, Object[] payload) {
+  private void validateParameters(Object[] tags, Object[] payload) {
     if (tags.length > 0 && tags.length != payload.length) {
       failed("Illegal arguments: the lists of tags and action parameters should have equal length.");
     }

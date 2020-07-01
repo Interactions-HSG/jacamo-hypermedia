@@ -3,7 +3,6 @@
  */
 
 +!load_environment(EnvName, EnvUrl) : true <-
-  .print("Hello world of include!");
   makeArtifact(EnvName, "yggdrasil.ContainerArtifact", [EnvUrl, "workspace"], ArtId);
   focusWhenAvailable(EnvName).
 
