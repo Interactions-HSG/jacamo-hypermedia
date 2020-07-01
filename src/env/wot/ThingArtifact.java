@@ -39,8 +39,8 @@ import ch.unisg.ics.interactions.wot.td.vocabularies.WoTSec;
  */
 public class ThingArtifact extends Artifact {
   protected ThingDescription td;
+  protected boolean dryRun;
   private Optional<String> apiKey;
-  private boolean dryRun;
   
   /**
    * Method called by CArtAgO to initialize the artifact. The W3C WoT Thing Description (TD) used by

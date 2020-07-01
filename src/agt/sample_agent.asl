@@ -1,6 +1,6 @@
 /* Initial beliefs and rules */
 
-td_url("http://yggdrasil.andreiciortea.ro/environments/env1").
+td_url("http://localhost:8080/environments/env1").
 
 /* Initial goals */
 
