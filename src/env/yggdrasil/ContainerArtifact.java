@@ -13,6 +13,7 @@ import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.Models;
 
+import cartago.LINK;
 import ch.unisg.ics.interactions.wot.td.ThingDescription;
 import ch.unisg.ics.interactions.wot.td.ThingDescription.TDFormat;
 import ch.unisg.ics.interactions.wot.td.io.TDGraphReader;
@@ -23,7 +24,8 @@ import wot.ThingArtifact;
  * {@code eve:contains}. Contained artifacts are exposed as observable properties using by default
  * the Jason functor "member" or one that is passed as an argument during artifact initialization.
  * 
- * @author Andrei Ciortea
+ * Contributors:
+ * - Andrei Ciortea (author), Interactions-HSG, University of St. Gallen
  *
  */
 public class ContainerArtifact extends ThingArtifact {
@@ -51,23 +53,41 @@ public class ContainerArtifact extends ThingArtifact {
     this.containmentFunctor = containmentProp;
     this.members = new ArrayList<String>();
     
+    exposeWorkspaceProps();
+  }
+  
+  @LINK
+  @Override
+  public void onNotification(Notification notification) {
+    try {
+      this.td = TDGraphReader.readFromString(TDFormat.RDF_TURTLE, notification.getMessage());
+      exposeWorkspaceProps();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+  
+  // TODO: remove / update existing obs props
+  private void exposeWorkspaceProps() {
     if (td.getThingURI().isPresent() && td.getGraph().isPresent()) {
       this.containerIRI = rdf.createIRI(td.getThingURI().get());
       this.graph = td.getGraph().get();
       
       this.members = getMembers(graph, containerIRI);
-      exposeWorkspaceProps();
-    } else {
-      failed("Could not read RDF graph for environment: " + url);
-    }
-  }
-  
-  private void exposeWorkspaceProps() {
-    for (String memberIRI : members) {
-      MemberMetadata data = new MemberMetadata(memberIRI);
       
-      // TODO: expose semantic types as well?
-      this.defineObsProperty(containmentFunctor, memberIRI, data.workspaceName);
+      for (String memberIRI : members) {
+        MemberMetadata data = new MemberMetadata(memberIRI);
+        
+        log("checking obs property for: " + memberIRI);
+        
+        if (getObsPropertyByTemplate(containmentFunctor, memberIRI, data.containerName) == null) {
+          log("not found, exposing property");
+          // TODO: expose semantic types as well?
+          this.defineObsProperty(containmentFunctor, memberIRI, data.containerName);
+        }
+      }
+    } else {
+      failed("Could not read RDF graph for container: " + td.getThingURI());
     }
   }
   
@@ -77,18 +97,18 @@ public class ContainerArtifact extends ThingArtifact {
   }
   
   class MemberMetadata {
-    String entityIRI;
-    String workspaceName;
+    String containerIRI;
+    String containerName;
     List<String> memberIRIs;
     
     MemberMetadata(String iri) {
-      this.entityIRI = iri;
+      this.containerIRI = iri;
       
       try {
-        ThingDescription td = TDGraphReader.readFromURL(TDFormat.RDF_TURTLE, entityIRI);
+        ThingDescription td = TDGraphReader.readFromURL(TDFormat.RDF_TURTLE, containerIRI);
         
-        workspaceName = td.getTitle();
-        memberIRIs = getMembers(td.getGraph().get(), rdf.createIRI(entityIRI));
+        containerName = td.getTitle();
+        memberIRIs = getMembers(td.getGraph().get(), rdf.createIRI(containerIRI));
       } catch (IOException | NoSuchElementException e) {
         failed(e.getMessage());
       }

@@ -9,7 +9,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.hc.client5.http.fluent.Request;
+import org.apache.hc.core5.http.Header;
+
 import cartago.Artifact;
+import cartago.LINK;
 import cartago.OPERATION;
 import cartago.OpFeedbackParam;
 import ch.unisg.ics.interactions.wot.td.ThingDescription;
@@ -27,6 +31,7 @@ import ch.unisg.ics.interactions.wot.td.security.APIKeySecurityScheme;
 import ch.unisg.ics.interactions.wot.td.security.SecurityScheme;
 import ch.unisg.ics.interactions.wot.td.vocabularies.TD;
 import ch.unisg.ics.interactions.wot.td.vocabularies.WoTSec;
+import yggdrasil.Notification;
 
 /**
  * A CArtAgO artifact that can interpret a W3C WoT Thing Description (TD) and exposes the affordances 
@@ -55,6 +60,8 @@ public class ThingArtifact extends Artifact {
      for (SecurityScheme scheme : td.getSecuritySchemes()) {
        defineObsProperty("securityScheme", scheme.getSchemaType());
      }
+     
+     registerForWebSub(url);
     } catch (IOException e) {
       failed(e.getMessage());
     }
@@ -241,6 +248,43 @@ public class ThingArtifact extends Artifact {
   TDHttpRequest setArrayPayload(TDHttpRequest request, DataSchema schema, Object[] payload) {
     request.setArrayPayload((ArraySchema) schema, Arrays.asList(payload));
     return request;
+  }
+  
+  @LINK
+  public void onNotification(Notification notification) {
+    log("The state of this ThingArtifact has changed: " + notification.getMessage());
+  }
+  
+  /* Registers for WebSub to an Yggdrasil node. This is not a generic implementation, but one
+   * specific to Yggdrasil. */
+  private void registerForWebSub(String url) {
+    try {
+      Header[] headers = Request.get(url).execute().returnResponse().getHeaders("Link");
+      
+      // This current implementation is specific to Yggdrasil, not a general implementation
+      if (headers.length != 2) {
+        return;
+      }
+      
+      Optional<String> hub = Optional.empty();
+      Optional<String> topic = Optional.empty();
+      
+      for (Header h : headers) {
+        if (h.getValue().endsWith("rel=\"hub\"")) {
+          hub = Optional.of(h.getValue().substring(1, h.getValue().indexOf('>')));
+        }
+        if (h.getValue().endsWith("rel=\"self\"")) {
+          topic = Optional.of(h.getValue().substring(1, h.getValue().indexOf('>')));
+        }
+      }
+      
+      if (hub.isPresent() && topic.isPresent()) {
+        log("Found WebSub links: " + hub.get() + ", " + topic.get());
+        defineObsProperty("websub", hub.get(), topic.get());
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
   
   /* Matches the entire 2XX class */

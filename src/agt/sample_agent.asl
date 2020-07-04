@@ -10,6 +10,8 @@ td_url("http://localhost:8080/environments/env1").
 
 +!start : td_url(Url) <-
   .print("hello world.");
+  makeArtifact("notification-server", "yggdrasil.NotificationServerArtifact", [8081], _);
+  start;
   !load_environment("myenv", Url).
 
 { include("inc/hypermedia.asl") }

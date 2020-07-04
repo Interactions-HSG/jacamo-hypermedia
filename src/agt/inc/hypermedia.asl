@@ -4,7 +4,8 @@
 
 +!load_environment(EnvName, EnvUrl) : true <-
   makeArtifact(EnvName, "yggdrasil.ContainerArtifact", [EnvUrl, "workspace"], ArtId);
-  focusWhenAvailable(EnvName).
+  focusWhenAvailable(EnvName);
+  !registerForWebSub(EnvName, ArtId).
 
 /* Mirror hypermedia workspaces as local CArtAgO workspaces */
 
@@ -16,11 +17,17 @@
   // Create a hypermedia WorkspaceArtifact for this workspace.
   // Used for some operations (e.g., create artifact). 
   makeArtifact(WorkspaceName, "yggdrasil.ContainerArtifact", [WorkspaceIRI, "artifact"], WkspArtId);
-  focusWhenAvailable(WorkspaceName).
+  focusWhenAvailable(WorkspaceName);
+  !registerForWebSub(WorkspaceName, WkspArtId).
 
 /* Mirror hypermedia artifacts in local CArtAgO workspaces */
 
 +artifact(ArtifactIRI, ArtifactName) : true <-
   .print("[Artifact: ", ArtifactIRI, "] Name: ", ArtifactName);
   makeArtifact(ArtifactName, "wot.ThingArtifact", [ArtifactIRI], ArtID);
-  focusWhenAvailable(ArtifactName).
+  focusWhenAvailable(ArtifactName);
+  !registerForWebSub(ArtifactName, ArtID).
+
++!registerForWebSub(ArtifactName, ArtID) : true <-
+  ?websub(HubIRI, TopicIRI)[artifact_name(ArtID,_)];
+  registerArtifactForNotifications(TopicIRI, ArtID, HubIRI).

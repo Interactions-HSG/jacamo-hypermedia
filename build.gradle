@@ -32,8 +32,11 @@ dependencies {
     implementation group: 'org.jacamo', name: 'jacamo', version: '0.8-SNAPSHOT'
     implementation name: 'wot-td-java', version: '0.0.1'
     implementation 'org.eclipse.rdf4j:rdf4j-runtime:3.2.1'
+    
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.0'
     implementation 'org.apache.httpcomponents.client5:httpclient5-fluent:5.0'
+    implementation group: 'org.eclipse.jetty.aggregate', name: 'jetty-all', version: '9.0.0.RC2'
+    
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'junit:junit:4.13'
 }
