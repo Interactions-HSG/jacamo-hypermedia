@@ -53,7 +53,7 @@ public class ContainerArtifact extends ThingArtifact {
     this.containmentFunctor = containmentProp;
     this.members = new ArrayList<String>();
     
-    exposeWorkspaceProps();
+    exposeMemberProps();
   }
   
   @LINK
@@ -61,14 +61,14 @@ public class ContainerArtifact extends ThingArtifact {
   public void onNotification(Notification notification) {
     try {
       this.td = TDGraphReader.readFromString(TDFormat.RDF_TURTLE, notification.getMessage());
-      exposeWorkspaceProps();
+      exposeMemberProps();
     } catch (Exception e) {
       e.printStackTrace();
     }
   }
   
   // TODO: remove / update existing obs props
-  private void exposeWorkspaceProps() {
+  private void exposeMemberProps() {
     if (td.getThingURI().isPresent() && td.getGraph().isPresent()) {
       this.containerIRI = rdf.createIRI(td.getThingURI().get());
       this.graph = td.getGraph().get();
@@ -78,10 +78,7 @@ public class ContainerArtifact extends ThingArtifact {
       for (String memberIRI : members) {
         MemberMetadata data = new MemberMetadata(memberIRI);
         
-        log("checking obs property for: " + memberIRI);
-        
         if (getObsPropertyByTemplate(containmentFunctor, memberIRI, data.containerName) == null) {
-          log("not found, exposing property");
           // TODO: expose semantic types as well?
           this.defineObsProperty(containmentFunctor, memberIRI, data.containerName);
         }

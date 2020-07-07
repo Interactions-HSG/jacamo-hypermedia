@@ -29,12 +29,23 @@ public class NotificationServerArtifact extends Artifact {
   private Map<String,ArtifactId> artifactRegistry;
   private AbstractQueue<Notification> notifications;
   
+  private String callbackUri;
+  
   private Server server;
   private boolean httpServerRunning;
   
   public static final int NOTIFICATION_DELIVERY_DELAY = 100;
   
-  void init(int port) {
+  void init(String host, Integer port) {
+    StringBuilder callbackBuilder = new StringBuilder("http://").append(host);
+    
+    if (port != null) {
+      callbackBuilder.append(":")
+          .append(Integer.valueOf(port));
+    }
+    
+    callbackUri = callbackBuilder.append("/notifications/").toString();
+    
     server = new Server(port);
     server.setHandler(new NotificationHandler());
     
@@ -96,12 +107,11 @@ public class NotificationServerArtifact extends Artifact {
     try {
       client.start();
       
-      // TODO: construct the callback IRI dynamically
       ContentResponse response = client.POST(hubIRI)
           .content(new StringContentProvider("{"
               + "\"hub.mode\" : \"subscribe\","
               + "\"hub.topic\" : \"" + artifactIRI + "\","
-              + "\"hub.callback\" : \"http://localhost:8081/notifications/\""
+              + "\"hub.callback\" : \"" + callbackUri + "\""
               + "}"), "application/json")
           .send();
       

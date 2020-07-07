@@ -55,13 +55,13 @@ public class ThingArtifact extends Artifact {
    */
   public void init(String url) {
     try {
-     td = TDGraphReader.readFromURL(TDFormat.RDF_TURTLE, url);
+      td = TDGraphReader.readFromURL(TDFormat.RDF_TURTLE, url);
      
-     for (SecurityScheme scheme : td.getSecuritySchemes()) {
-       defineObsProperty("securityScheme", scheme.getSchemaType());
-     }
+      for (SecurityScheme scheme : td.getSecuritySchemes()) {
+        defineObsProperty("securityScheme", scheme.getSchemaType());
+      }
      
-     registerForWebSub(url);
+      registerForWebSub(url);
     } catch (IOException e) {
       failed(e.getMessage());
     }
@@ -253,6 +253,17 @@ public class ThingArtifact extends Artifact {
   @LINK
   public void onNotification(Notification notification) {
     log("The state of this ThingArtifact has changed: " + notification.getMessage());
+    
+    String obsProp = notification.getMessage();
+    String functor = obsProp.substring(0, obsProp.indexOf("("));
+    String[] params = obsProp.substring(obsProp.indexOf("(") + 1, obsProp.length() - 1)
+        .split(",");
+    
+    if (this.hasObsPropertyByTemplate(functor, (Object[]) params)) {
+      this.updateObsProperty(functor, (Object[]) params);
+    } else {
+      this.defineObsProperty(functor, (Object[]) params);
+    }
   }
   
   /* Registers for WebSub to an Yggdrasil node. This is not a generic implementation, but one
@@ -468,6 +479,9 @@ public class ThingArtifact extends Artifact {
     if (scheme.isPresent() && apiKey.isPresent()) {
       request.setAPIKey((APIKeySecurityScheme) scheme.get(), apiKey.get());
     }
+    
+    request.addHeader("X-Agent-WebID", "http://example.org#" + this.getCurrentOpAgentId()
+        .getAgentName());
     
     if (this.dryRun) {
       log(request.toString());

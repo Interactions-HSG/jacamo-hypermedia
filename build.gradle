@@ -62,7 +62,12 @@ task run (type: JavaExec, dependsOn: 'classes') {
         mkdir 'log'
     }
     main 'jacamo.infra.JaCaMoLauncher'
-    args 'jacamo_hypermedia.jcm'
+    if(project.hasProperty('jcmFile')){
+        args jcmFile
+    } else {
+        args 'jacamo_hypermedia.jcm'
+    }
+    //args 'jacamo_hypermedia.jcm'
     classpath sourceSets.main.runtimeClasspath
 }
 
