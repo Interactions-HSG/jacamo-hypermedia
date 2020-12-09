@@ -26,7 +26,7 @@ env_url("http://localhost:8085/environments/env2").
   
 +!countTo(X) : true <-
   .print(X, "...");
-  invokeAction("htpp://example.org/Increment", [])[artifact_name("c2")];
+  invokeAction("http://example.org/Increment", [])[artifact_name("c2")];
   .wait(1000);
   !countTo(X - 1).
 
