@@ -34,7 +34,7 @@ import ch.unisg.ics.interactions.wot.td.vocabularies.WoTSec;
 import yggdrasil.Notification;
 
 /**
- * A CArtAgO artifact that can interpret a W3C WoT Thing Description (TD) and exposes the affordances 
+ * A CArtAgO artifact that can interpret a W3C WoT Thing Description (TD) and exposes the affordances
  * of the described Thing to agents. The artifact uses the hypermedia controls provided in the TD to
  * compose and issue HTTP requests for the exposed affordances.
  * 
@@ -43,6 +43,8 @@ import yggdrasil.Notification;
  *
  */
 public class ThingArtifact extends Artifact {
+  private static final String WEBID_PREFIX = "http://hyperagents.org/";
+  
   protected ThingDescription td;
   protected boolean dryRun;
   private Optional<String> apiKey;
@@ -61,7 +63,7 @@ public class ThingArtifact extends Artifact {
         defineObsProperty("securityScheme", scheme.getSchemeType());
       }
      
-      registerForWebSub(url);
+      exposeWebSubIRIs(url);
     } catch (IOException e) {
       failed(e.getMessage());
     }
@@ -84,59 +86,59 @@ public class ThingArtifact extends Artifact {
   
   /**
    * CArtAgO operation for reading a property of a Thing using a semantic model of the Thing.
-   * 
-   * @param semanticType An IRI that identifies the property type.
+   *
+   * @param propertyTag Either an IRI that identifies the property type, or the property's name.
    * @param output The read value. Can be a list of one or more primitives, or a nested list of
    * primitives or arbitrary depth.
    */
   @OPERATION
-  public void readProperty(String semanticType, OpFeedbackParam<Object[]> output) {
-    readProperty(semanticType, Optional.empty(), output);
+  public void readProperty(String propertyTag, OpFeedbackParam<Object[]> output) {
+    readProperty(propertyTag, Optional.empty(), output);
   }
-  
+
   /**
    * CArtAgO operation for reading a property of a Thing using a semantic model of the Thing.
-   * 
-   * @param semanticType An IRI that identifies the property type.
-   * @param tags A list of IRIs, used if the property is an object schema.
+   *
+   * @param propertyTag Either an IRI that identifies the property type, or the property's name.
+   * @param payloadTags A list of IRIs or object property names (if property is an object schema).
    * @param output The read value. Can be a list of one or more primitives, or a nested list of
    * primitives or arbitrary depth.
    */
   @OPERATION
-  public void readProperty(String semanticType, OpFeedbackParam<Object[]> tags, 
+  public void readProperty(String propertyTag, OpFeedbackParam<Object[]> payloadTags,
       OpFeedbackParam<Object[]> output) {
-    readProperty(semanticType, Optional.of(tags), output);
+    readProperty(propertyTag, Optional.of(payloadTags), output);
   }
 
   /**
    * CArtAgO operation for writing a property of a Thing using a semantic model of the Thing.
-   * 
-   * @param semanticType An IRI that identifies the property type.
+   *
+   * @param propertyTag Either an IRI that identifies the property type, or the property's name.
    * @param payload The payload to be issued when writing the property.
    */
   @OPERATION
-  public void writeProperty(String semanticType, Object[] payload) {
-    writeProperty(semanticType, new Object[0], payload);
+  public void writeProperty(String propertyTag, Object[] payload) {
+    writeProperty(propertyTag, new Object[0], payload);
   }
-  
+
   /**
    * CArtAgO operation for writing a property of a Thing using a semantic model of the Thing.
-   * 
-   * @param semanticType An IRI that identifies the property type.
-   * @param tags A list of IRIs that identify parameters sent in the payload. Used for object schemas.
+   *
+   * @param propertyTag Either an IRI that identifies the property type, or the property's name.
+   * @param payloadTags A list of IRIs or object property names (if property is an object schema).
    * @param payload The payload to be issued when writing the property.
    */
   @OPERATION
-  public void writeProperty(String semanticType, Object[] tags, Object[] payload) {
-    validateParameters(tags, payload);
+  public void writeProperty(String propertyTag, Object[] payloadTags, Object[] payload) {
+    validateParameters(propertyTag, payloadTags, payload);
     if (payload.length == 0) {
       failed("The payload used when writing a property cannot be empty.");
     }
-    
-    PropertyAffordance property = getFirstPropertyOrFail(semanticType);
-    Optional<TDHttpResponse> response = executePropertyRequest(property, TD.writeProperty, tags, 
-        payload);
-    
+
+    PropertyAffordance property = getPropertyOrFail(propertyTag);
+    Optional<TDHttpResponse> response = executePropertyRequest(property, TD.writeProperty,
+        payloadTags, payload);
+
     if (response.isPresent() && !requestSucceeded(response.get().getStatusCode())) {
       failed("Status code: " + response.get().getStatusCode());
     }
@@ -144,55 +146,64 @@ public class ThingArtifact extends Artifact {
   
   /**
    * CArtAgO operation for invoking an action on a Thing using a semantic model of the Thing.
-   * 
-   * @param semanticType An IRI that identifies the action type.
+   *
+   * @param actionTag Either an IRI that identifies the action type, or the action's name.
    * @param payload The payload to be issued when invoking the action.
    */
   @OPERATION
-  public void invokeAction(String semanticType, Object[] payload) {
-    invokeAction(semanticType, new Object[0], payload);
+  public void invokeAction(String actionTag, Object[] payload) {
+    invokeAction(actionTag, new Object[0], payload);
+  }
+
+  @OPERATION
+  public void invokeAction(String semanticType) {
+    invokeAction(semanticType, new Object[0], new Object[0]);
   }
   
   /**
    * CArtAgO operation for invoking an action on a Thing using a semantic model of the Thing.
-   * 
-   * @param semanticType An IRI that identifies the action type.
-   * @param tags A list of IRIs that identify parameters sent in the payload. Used for object schemas.
+   *
+   * @param actionTag Either an IRI that identifies the action type, or the action's name.
+   * @param payloadTags A list of IRIs or object property names (used for object schema payloads).
    * @param payload The payload to be issued when invoking the action.
    */
   @OPERATION
-  public void invokeAction(String semanticType, Object[] tags, Object[] payload) {
-    validateParameters(tags, payload);
-    
-    Optional<ActionAffordance> action = td.getFirstActionBySemanticType(semanticType);
-    
+  public void invokeAction(String actionTag, Object[] payloadTags, Object[] payload) {
+    validateParameters(actionTag, payloadTags, payload);
+
+    Optional<ActionAffordance> action = td.getFirstActionBySemanticType(actionTag);
+
+    if (!action.isPresent()) {
+      action = td.getActionByName(actionTag);
+    }
+
     if (action.isPresent()) {
       Optional<Form> form = action.get().getFirstForm();
-      
+
       if (!form.isPresent()) {
         // Should not happen (an exception will be raised by the TD library first)
         failed("Invalid TD: the invoked action does not have a valid form.");
       }
-      
+
       Optional<DataSchema> inputSchema = action.get().getInputSchema();
       if (!inputSchema.isPresent() && payload.length > 0) {
-        failed("This type of action does not take any input: " + semanticType);
+        failed("This type of action does not take any input: " + actionTag);
       }
-      
-      Optional<TDHttpResponse> response = executeRequest(TD.invokeAction, form.get(), inputSchema, 
-          tags, payload);
-      
+
+      Optional<TDHttpResponse> response = executeRequest(TD.invokeAction, form.get(), inputSchema,
+          payloadTags, payload);
+
       if (response.isPresent() && !requestSucceeded(response.get().getStatusCode())) {
         failed("Status code: " + response.get().getStatusCode());
       }
     } else {
-      failed("Unknown action: " + semanticType);
+      failed("Unknown action: " + actionTag);
     }
   }
   
   /**
    * CArtAgO operation that sets an authentication token (used with APIKeySecurityScheme).
-   * 
+   *
    * @param token The authentication token.
    */
   @OPERATION
@@ -218,29 +229,29 @@ public class ThingArtifact extends Artifact {
         // Matches to TD StringSchema
         request.setPrimitivePayload(schema, (String) payload);
       } else {
-        failed("Unable to detect the primitive datatype of payload: " 
+        failed("Unable to detect the primitive datatype of payload: "
             + payload.getClass().getCanonicalName());
       }
     } catch (IllegalArgumentException e) {
       failed(e.getMessage());
     }
-    
+
     return request;
   }
   
   /* Set a TD ObjectSchema payload */
-  TDHttpRequest setObjectPayload(TDHttpRequest request, DataSchema schema, Object[] tags, 
+  TDHttpRequest setObjectPayload(TDHttpRequest request, DataSchema schema, Object[] tags,
       Object[] payload) {
     Map<String, Object> requestPayload = new HashMap<String, Object>();
-    
+
     for (int i = 0; i < tags.length; i ++) {
       if (tags[i] instanceof String) {
         requestPayload.put((String) tags[i], payload[i]);
       }
     }
-    
+
     request.setObjectPayload((ObjectSchema) schema, requestPayload);
-    
+
     return request;
   }
   
@@ -268,12 +279,13 @@ public class ThingArtifact extends Artifact {
   
   /* Registers for WebSub to an Yggdrasil node. This is not a generic implementation, but one
    * specific to Yggdrasil. */
-  private void registerForWebSub(String url) {
+  private void exposeWebSubIRIs(String url) {
     try {
       Header[] headers = Request.get(url).execute().returnResponse().getHeaders("Link");
       
       // This current implementation is specific to Yggdrasil, not a general implementation
-      if (headers.length != 2) {
+      // TODO: 4 is for both WebSub and RDFSub
+      if (headers.length != 4) {
         return;
       }
       
@@ -303,24 +315,23 @@ public class ThingArtifact extends Artifact {
     return statusCode >= 200 && statusCode < 300;
   }
   
-  
-  private void validateParameters(Object[] tags, Object[] payload) {
+  private void validateParameters(String semanticType, Object[] tags, Object[] payload) {
     if (tags.length > 0 && tags.length != payload.length) {
       failed("Illegal arguments: the lists of tags and action parameters should have equal length.");
     }
   }
   
-  private void readProperty(String semanticType, Optional<OpFeedbackParam<Object[]>> tags, 
+  private void readProperty(String semanticType, Optional<OpFeedbackParam<Object[]>> tags,
       OpFeedbackParam<Object[]> output) {
-    PropertyAffordance property = getFirstPropertyOrFail(semanticType);
-    Optional<TDHttpResponse> response = executePropertyRequest(property, TD.readProperty, 
+    PropertyAffordance property = getPropertyOrFail(semanticType);
+    Optional<TDHttpResponse> response = executePropertyRequest(property, TD.readProperty,
         new Object[0], new Object[0]);
-    
+
     if (!dryRun) {
       if (!response.isPresent()) {
         failed("Something went wrong with the read property request.");
       }
-      
+
       if (requestSucceeded(response.get().getStatusCode())) {
         readPayloadWithSchema(response.get(), property.getDataSchema(), tags, output);
       } else {
@@ -329,13 +340,18 @@ public class ThingArtifact extends Artifact {
     }
   }
   
-  private PropertyAffordance getFirstPropertyOrFail(String semanticType) {
-    Optional<PropertyAffordance> property = td.getFirstPropertyBySemanticType(semanticType);
-    
+  /* Tries to retrieve a property first by semantic tag, then by name. Fails if none works. */
+  private PropertyAffordance getPropertyOrFail(String propertyTag) {
+    Optional<PropertyAffordance> property = td.getFirstPropertyBySemanticType(propertyTag);
+
     if (!property.isPresent()) {
-      failed("Unknown property: " + semanticType);
+      property = td.getPropertyByName(propertyTag);
     }
-    
+
+    if (!property.isPresent()) {
+      failed("Unknown property: " + propertyTag);
+    }
+
     return property.get();
   }
   
@@ -344,9 +360,9 @@ public class ThingArtifact extends Artifact {
   // - we cannot use nested objects with the current ThingArtifact API (needs a more elaborated
   // JaCa - WoT bridge)
   @SuppressWarnings("unchecked")
-  private void readPayloadWithSchema(TDHttpResponse response, DataSchema schema, 
+  private void readPayloadWithSchema(TDHttpResponse response, DataSchema schema,
       Optional<OpFeedbackParam<Object[]>> tags, OpFeedbackParam<Object[]> output) {
-    
+
     switch (schema.getDatatype()) {
       case DataSchema.BOOLEAN:
         output.set(new Boolean[] { response.getPayloadAsBoolean() });
@@ -367,7 +383,7 @@ public class ThingArtifact extends Artifact {
           Map<String, Object> payload = response.getPayloadAsObject((ObjectSchema) schema);
           List<String> tagList = new ArrayList<String>();
           List<Object> data = new ArrayList<Object>();
-          
+
           for (String tag : payload.keySet()) {
             tagList.add(tag);
             Object value = payload.get(tag);
@@ -377,7 +393,7 @@ public class ThingArtifact extends Artifact {
               data.add(value);
             }
           }
-          
+
           tags.get().set(tagList.toArray());
           output.set(data.toArray());
         }
@@ -394,13 +410,13 @@ public class ThingArtifact extends Artifact {
   @SuppressWarnings("unchecked")
   Object[] nestedListsToArrays(Collection<Object> data) {
     Object[] out = data.toArray();
-    
+
     for (int i = 0; i < out.length; i ++) {
       if (out[i] instanceof Collection<?>) {
         out[i] = nestedListsToArrays((Collection<Object>) out[i]);
       }
     }
-    
+
     return out;
   }
   
@@ -418,7 +434,7 @@ public class ThingArtifact extends Artifact {
     return executeRequest(operationType, form.get(), Optional.of(schema), tags, payload);
   }
   
-  private Optional<TDHttpResponse> executeRequest(String operationType, Form form, 
+  private Optional<TDHttpResponse> executeRequest(String operationType, Form form,
       Optional<DataSchema> schema, Object[] tags, Object[] payload) {
     if (schema.isPresent() && payload.length > 0) {
       // Request with payload
@@ -439,37 +455,37 @@ public class ThingArtifact extends Artifact {
     }
   }
   
-  private Optional<TDHttpResponse> executeRequestPrimitivePayload(String operationType, Form form, 
+  private Optional<TDHttpResponse> executeRequestPrimitivePayload(String operationType, Form form,
       DataSchema schema, Object payload) {
     TDHttpRequest request = new TDHttpRequest(form, operationType);
     request = setPrimitivePayload(request, schema, payload);
-    
+
     return issueRequest(request);
   }
   
-  private Optional<TDHttpResponse> executeRequestObjectPayload(String operationType, Form form, 
+  private Optional<TDHttpResponse> executeRequestObjectPayload(String operationType, Form form,
       DataSchema schema, Object[] tags, Object[] payload) {
     if (schema.getDatatype() != DataSchema.OBJECT) {
-      failed("TD mismatch: illegal arguments, this affordance uses a data schema of type " 
+      failed("TD mismatch: illegal arguments, this affordance uses a data schema of type "
           + schema.getDatatype());
     }
-    
+
     TDHttpRequest request = new TDHttpRequest(form, operationType);
     request = setObjectPayload(request, schema, tags, payload);
-    
+
     return issueRequest(request);
   }
   
-  private Optional<TDHttpResponse> executeRequestArrayPayload(String operationType, Form form, 
+  private Optional<TDHttpResponse> executeRequestArrayPayload(String operationType, Form form,
       DataSchema schema, Object[] payload) {
     if (schema.getDatatype() != DataSchema.ARRAY) {
-      failed("TD mismatch: illegal arguments, this affordance uses a data schema of type " 
+      failed("TD mismatch: illegal arguments, this affordance uses a data schema of type "
           + schema.getDatatype());
     }
-    
+
     TDHttpRequest request = new TDHttpRequest(form, operationType);
     request = setArrayPayload(request, schema, payload);
-    
+
     return issueRequest(request);
   }
   
@@ -480,8 +496,9 @@ public class ThingArtifact extends Artifact {
       request.setAPIKey((APIKeySecurityScheme) scheme.get(), apiKey.get());
     }
     
-    request.addHeader("X-Agent-WebID", "http://example.org#" + this.getCurrentOpAgentId()
-        .getAgentName());
+    // Set a header with the id of the operating agent
+    request.addHeader("X-Agent-WebID", WEBID_PREFIX + getCurrentOpAgentId().getAgentName());
+    log("operating agent: " + getCurrentOpAgentId().getAgentName());
     
     if (this.dryRun) {
       log(request.toString());
@@ -494,7 +511,7 @@ public class ThingArtifact extends Artifact {
         failed(e.getMessage());
       }
     }
-    
+
     return Optional.empty();
   }
 }
