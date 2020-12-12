@@ -1,7 +1,7 @@
 /* Initial beliefs and rules */
 
 //Please register here for using the Phantom X Robot: https://app.swaggerhub.com/apis-docs/iomz/leubot/1.2#/user/addUser
-api_key("9a6d543aec266a7b5146e3d121ef10a8").
+api_key("API-KEY").
 env_url("http://localhost:8080/environments/env1").
 
 //Check the default, lower and upper limits of the PhantomX joint parameters: https://github.com/Interactions-HSG/leubot

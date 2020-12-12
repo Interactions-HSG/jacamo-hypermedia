@@ -45,28 +45,28 @@ public class ThingArtifactTest {
   @Test
   public void testBooleanPayload() throws ParseException, IOException {
     request = artifact.setPrimitivePayload(request, new BooleanSchema.Builder().build(), true);
-    String payload = request.getPayload();
+    String payload = request.getPayloadAsString();
     assertTrue(new Gson().fromJson(payload, Boolean.class).booleanValue());
   }
   
   @Test
   public void testStringPayload() throws ParseException, IOException {
     request = artifact.setPrimitivePayload(request, new StringSchema.Builder().build(), "blabla");
-    String payload = request.getPayload();
+    String payload = request.getPayloadAsString();
     assertEquals("blabla", new Gson().fromJson(payload, String.class));
   }
   
   @Test
   public void testIntegerPayload() throws ParseException, IOException {
     request = artifact.setPrimitivePayload(request, new IntegerSchema.Builder().build(), (Integer) 42);
-    String payload = request.getPayload();
+    String payload = request.getPayloadAsString();
     assertEquals((Integer) 42, new Gson().fromJson(payload, Integer.class));
   }
   
   @Test
   public void testNumberPayload() throws ParseException, IOException {
     request = artifact.setPrimitivePayload(request, new NumberSchema.Builder().build(), 0.05);
-    String payload = request.getPayload();
+    String payload = request.getPayloadAsString();
     assertEquals(0.05, new Gson().fromJson(payload, Double.class), 0.001);
   }
   
@@ -87,7 +87,7 @@ public class ThingArtifactTest {
             .build())
         .build(), tags, params);
     
-    String payload = request.getPayload();
+    String payload = request.getPayloadAsString();
     JsonObject object = JsonParser.parseString(payload).getAsJsonObject();
     
     assertEquals("John", object.get("first_name").getAsString());
@@ -101,7 +101,7 @@ public class ThingArtifactTest {
     
     request = artifact.setArrayPayload(request, new ArraySchema.Builder().build(), params);
     
-    String payload = request.getPayload();
+    String payload = request.getPayloadAsString();
     JsonArray array = JsonParser.parseString(payload).getAsJsonArray();
     
     assertEquals("John", array.get(0).getAsString());

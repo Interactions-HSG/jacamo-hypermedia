@@ -58,7 +58,7 @@ public class ThingArtifact extends Artifact {
       td = TDGraphReader.readFromURL(TDFormat.RDF_TURTLE, url);
      
       for (SecurityScheme scheme : td.getSecuritySchemes()) {
-        defineObsProperty("securityScheme", scheme.getSchemaType());
+        defineObsProperty("securityScheme", scheme.getSchemeType());
       }
      
       registerForWebSub(url);
@@ -474,7 +474,7 @@ public class ThingArtifact extends Artifact {
   }
   
   private Optional<TDHttpResponse> issueRequest(TDHttpRequest request) {
-    Optional<SecurityScheme> scheme = td.getSecuritySchemeByType(WoTSec.APIKeySecurityScheme);
+    Optional<SecurityScheme> scheme = td.getFirstSecuritySchemeByType(WoTSec.APIKeySecurityScheme);
     
     if (scheme.isPresent() && apiKey.isPresent()) {
       request.setAPIKey((APIKeySecurityScheme) scheme.get(), apiKey.get());
