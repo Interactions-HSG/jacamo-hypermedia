@@ -13,7 +13,8 @@ env_url("http://localhost:8085/environments/env2").
   makeArtifact("notification-server", "yggdrasil.NotificationServerArtifact", ["localhost", 8082], _);
   start;
   !load_environment("myenv", Url);
-  focusWhenAvailable("wksp2");
+//  focusWhenAvailable("wksp2");
+  .wait(2000);
   .print("Creating counter...");
   invokeAction("http://w3id.org/eve#MakeArtifact",
     ["http://w3id.org/eve#ArtifactClass", "http://w3id.org/eve#ArtifactName"], 

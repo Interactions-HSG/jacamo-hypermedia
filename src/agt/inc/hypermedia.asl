@@ -3,9 +3,13 @@
  */
 
 +!load_environment(EnvName, EnvUrl) : true <-
-  makeArtifact(EnvName, "yggdrasil.ContainerArtifact", [EnvUrl, "workspace"], ArtId);
+  makeArtifact(EnvName, "yggdrasil.RDFContainerArtifact", [EnvUrl, "workspace"], ArtId);
   focusWhenAvailable(EnvName);
-  !registerForWebSub(EnvName, ArtId).
+  !subEnvironmentMembers(EnvUrl, ArtId).
+
++!subEnvironmentMembers(EnvUrl, ArtID) : true <-
+  ?rdfsub(HubIRI, TopicIRI)[artifact_name(ArtID,_)];
+  registerEnvironmentForNotifications(TopicIRI, EnvUrl, ArtID, HubIRI).
 
 /* Mirror hypermedia workspaces as local CArtAgO workspaces */
 
@@ -16,9 +20,13 @@
   joinWorkspace(WorkspaceName, WorkspaceArtId);
   // Create a hypermedia WorkspaceArtifact for this workspace.
   // Used for some operations (e.g., create artifact). 
-  makeArtifact(WorkspaceName, "yggdrasil.ContainerArtifact", [WorkspaceIRI, "artifact"], WkspArtId);
+  makeArtifact(WorkspaceName, "yggdrasil.RDFContainerArtifact", [WorkspaceIRI, "artifact"], WkspArtId);
   focusWhenAvailable(WorkspaceName);
-  !registerForWebSub(WorkspaceName, WkspArtId).
+  !subWorkspaceMembers(WorkspaceIRI, WkspArtId).
+
++!subWorkspaceMembers(WorkspaceIRI, ArtID) : true <-
+  ?rdfsub(HubIRI, TopicIRI)[artifact_name(ArtID,_)];
+  registerWorkspaceForNotifications(TopicIRI, WorkspaceIRI, ArtID, HubIRI).
 
 /* Mirror hypermedia artifacts in local CArtAgO workspaces */
 
