@@ -192,7 +192,7 @@ public class ThingArtifact extends Artifact {
 
       Optional<TDHttpResponse> response = executeRequest(TD.invokeAction, form.get(), inputSchema,
           payloadTags, payload);
-
+      
       if (response.isPresent() && !requestSucceeded(response.get().getStatusCode())) {
         failed("Status code: " + response.get().getStatusCode());
       }
@@ -289,25 +289,46 @@ public class ThingArtifact extends Artifact {
         return;
       }
       
-      Optional<String> hub = Optional.empty();
-      Optional<String> topic = Optional.empty();
+//      Optional<String> webHub = Optional.empty();
+//      Optional<String> topic = Optional.empty();
+//      
+//      for (Header h : headers) {
+//        if (h.getValue().endsWith("rel=\"hub\"")) {
+//          webHub = Optional.of(h.getValue().substring(1, h.getValue().indexOf('>')));
+//        }
+//        if (h.getValue().endsWith("rel=\"self\"")) {
+//          topic = Optional.of(h.getValue().substring(1, h.getValue().indexOf('>')));
+//        }
+//      }
       
-      for (Header h : headers) {
-        if (h.getValue().endsWith("rel=\"hub\"")) {
-          hub = Optional.of(h.getValue().substring(1, h.getValue().indexOf('>')));
-        }
-        if (h.getValue().endsWith("rel=\"self\"")) {
-          topic = Optional.of(h.getValue().substring(1, h.getValue().indexOf('>')));
-        }
+      Optional<String> webHub = extractLinkHeader(headers, "hub");
+      Optional<String> webTopic = extractLinkHeader(headers, "self");
+      
+      if (webHub.isPresent() && webTopic.isPresent()) {
+        log("Found WebSub links: " + webHub.get() + ", " + webTopic.get());
+        defineObsProperty("websub", webHub.get(), webTopic.get());
       }
       
-      if (hub.isPresent() && topic.isPresent()) {
-        log("Found WebSub links: " + hub.get() + ", " + topic.get());
-        defineObsProperty("websub", hub.get(), topic.get());
+      Optional<String> rdfHub = extractLinkHeader(headers, "rdfhub");
+      Optional<String> rdfTopic = extractLinkHeader(headers, "topic");
+      
+      if (rdfHub.isPresent() && rdfTopic.isPresent()) {
+        log("Found RDFSub links: " + rdfHub.get() + ", " + rdfTopic.get());
+        defineObsProperty("rdfsub", rdfHub.get(), rdfTopic.get());
       }
     } catch (IOException e) {
       e.printStackTrace();
     }
+  }
+  
+  private Optional<String> extractLinkHeader(Header[] headers, String rel) {
+    for (Header h : headers) {
+      if (h.getValue().endsWith("rel=\"" + rel + "\"")) {
+        return Optional.of(h.getValue().substring(1, h.getValue().indexOf('>')));
+      }
+    }
+    
+    return Optional.empty();
   }
   
   /* Matches the entire 2XX class */
