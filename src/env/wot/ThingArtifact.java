@@ -284,23 +284,6 @@ public class ThingArtifact extends Artifact {
       Header[] headers = Request.get(url).execute().returnResponse().getHeaders("Link");
       
       // This current implementation is specific to Yggdrasil, not a general implementation
-      // TODO: 4 is for both WebSub and RDFSub
-      if (headers.length != 4) {
-        return;
-      }
-      
-//      Optional<String> webHub = Optional.empty();
-//      Optional<String> topic = Optional.empty();
-//      
-//      for (Header h : headers) {
-//        if (h.getValue().endsWith("rel=\"hub\"")) {
-//          webHub = Optional.of(h.getValue().substring(1, h.getValue().indexOf('>')));
-//        }
-//        if (h.getValue().endsWith("rel=\"self\"")) {
-//          topic = Optional.of(h.getValue().substring(1, h.getValue().indexOf('>')));
-//        }
-//      }
-      
       Optional<String> webHub = extractLinkHeader(headers, "hub");
       Optional<String> webTopic = extractLinkHeader(headers, "self");
       
