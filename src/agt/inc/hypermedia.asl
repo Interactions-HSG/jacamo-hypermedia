@@ -3,6 +3,7 @@
  */
 
 +!load_environment(EnvName, EnvUrl) : true <-
+  .print("Loading environment (entry point): ", EnvUrl);
   makeArtifact(EnvName, "yggdrasil.RDFContainerArtifact", [EnvUrl, "workspace"], ArtId);
   focusWhenAvailable(EnvName);
   !subEnvironmentMembers(EnvUrl, ArtId).
@@ -14,8 +15,7 @@
 /* Mirror hypermedia workspaces as local CArtAgO workspaces */
 
 +workspace(WorkspaceIRI, WorkspaceName) : true <-
-  .print("Creating workspace: ", WorkspaceIRI);
-  .print("[Workspace: ", WorkspaceIRI, "] Name: ", WorkspaceName);
+  .print("Discovered workspace (name: ", WorkspaceName ,"): ", WorkspaceIRI);
   createWorkspace(WorkspaceName);
   joinWorkspace(WorkspaceName, WorkspaceArtId);
   // Create a hypermedia WorkspaceArtifact for this workspace.
@@ -31,7 +31,7 @@
 /* Mirror hypermedia artifacts in local CArtAgO workspaces */
 
 +artifact(ArtifactIRI, ArtifactName) : true <-
-  .print("[Artifact: ", ArtifactIRI, "] Name: ", ArtifactName);
+  .print("Discovered artifact (name: ", ArtifactName ,"): ", ArtifactIRI);
   makeArtifact(ArtifactName, "wot.ThingArtifact", [ArtifactIRI], ArtID);
   focusWhenAvailable(ArtifactName);
   !registerForWebSub(ArtifactName, ArtID).

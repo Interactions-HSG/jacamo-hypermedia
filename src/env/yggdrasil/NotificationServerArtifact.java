@@ -163,6 +163,17 @@ public class NotificationServerArtifact extends Artifact {
   
   private void subscribeToMemberPattern(String hubIRI, String topicIRI, String artifactIRI, 
       String artifactClass) {
+    String query = "select ?member ?memberName from <" + topicIRI + "> where { "
+        + "<" + artifactIRI + "> a <" + artifactClass + "> ; "
+        + "<http://w3id.org/eve#contains> ?member . "
+        + "?member <http://purl.org/dc/terms/title> ?memberName . "
+        + "}";
+    
+    subscribeToTriplePattern(artifactIRI, hubIRI, "http://localhost:1080/trigger-members", query);
+  }
+  
+  private void subscribeToTriplePattern(String artifactIRI, String hubIRI, String trigger, 
+      String query) {
     HttpClient client = new HttpClient();
     try {
       client.start();
@@ -170,12 +181,8 @@ public class NotificationServerArtifact extends Artifact {
       ContentResponse response = client.POST(hubIRI)
           .content(new StringContentProvider("<> a us:Subscription ;\n" + 
               "us:callback <" + callbackUri + RDFSUB_CALLBACK_PATH + "/> ;\n" + 
-              "us:trigger <http://localhost:1080/trigger-members> ;\n" + 
-              "us:query \"select ?member ?memberName from <" + topicIRI + "> where { "
-              + "<" + artifactIRI + "> a <" + artifactClass + "> ; "
-              + "<http://w3id.org/eve#contains> ?member . "
-              + "?member <http://purl.org/dc/terms/title> ?memberName . "
-              + "}\" ."), "text/turtle")
+              "us:trigger <" + trigger + "> ;\n" + 
+              "us:query \"" + query + "\""), "text/turtle")
           .send();
       
       if (response.getStatus() == HttpStatus.SC_ACCEPTED) {
