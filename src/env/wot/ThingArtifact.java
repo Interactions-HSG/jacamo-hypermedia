@@ -37,45 +37,45 @@ import yggdrasil.Notification;
  * A CArtAgO artifact that can interpret a W3C WoT Thing Description (TD) and exposes the affordances
  * of the described Thing to agents. The artifact uses the hypermedia controls provided in the TD to
  * compose and issue HTTP requests for the exposed affordances.
- * 
+ *
  * Contributors:
  * - Andrei Ciortea (author), Interactions-HSG, University of St. Gallen
  *
  */
 public class ThingArtifact extends Artifact {
   private static final String WEBID_PREFIX = "http://hyperagents.org/";
-  
+
   protected ThingDescription td;
   protected boolean dryRun;
   private Optional<String> apiKey;
-  
+
   /**
    * Method called by CArtAgO to initialize the artifact. The W3C WoT Thing Description (TD) used by
-   * this artifact is retrieved and parsed during initialization. 
-   * 
+   * this artifact is retrieved and parsed during initialization.
+   *
    * @param url A URL that dereferences to a W3C WoT Thing Description.
    */
   public void init(String url) {
     try {
       td = TDGraphReader.readFromURL(TDFormat.RDF_TURTLE, url);
-     
+
       for (SecurityScheme scheme : td.getSecuritySchemes()) {
         defineObsProperty("securityScheme", scheme.getSchemeType());
       }
-     
+
       exposeWebSubIRIs(url);
     } catch (IOException e) {
       failed(e.getMessage());
     }
-    
+
     this.apiKey = Optional.empty();
     this.dryRun = false;
   }
-  
+
   /**
    * Method called by CArtAgO to initialize the artifact. The W3C WoT Thing Description (TD) used by
    * this artifact is retrieved and parsed during initialization.
-   * 
+   *
    * @param url A URL that dereferences to a W3C WoT Thing Description.
    * @param dryRun When set to true, the requests are logged, but not executed.
    */
@@ -83,7 +83,7 @@ public class ThingArtifact extends Artifact {
     init(url);
     this.dryRun = dryRun;
   }
-  
+
   /**
    * CArtAgO operation for reading a property of a Thing using a semantic model of the Thing.
    *
@@ -143,7 +143,7 @@ public class ThingArtifact extends Artifact {
       failed("Status code: " + response.get().getStatusCode());
     }
   }
-  
+
   /**
    * CArtAgO operation for invoking an action on a Thing using a semantic model of the Thing.
    *
@@ -159,7 +159,7 @@ public class ThingArtifact extends Artifact {
   public void invokeAction(String semanticType) {
     invokeAction(semanticType, new Object[0], new Object[0]);
   }
-  
+
   /**
    * CArtAgO operation for invoking an action on a Thing using a semantic model of the Thing.
    *
@@ -200,7 +200,7 @@ public class ThingArtifact extends Artifact {
       failed("Unknown action: " + actionTag);
     }
   }
-  
+
   /**
    * CArtAgO operation that sets an authentication token (used with APIKeySecurityScheme).
    *
@@ -212,7 +212,7 @@ public class ThingArtifact extends Artifact {
       this.apiKey = Optional.of(token);
     }
   }
-  
+
   /* Set a primitive payload. */
   TDHttpRequest setPrimitivePayload(TDHttpRequest request, DataSchema schema, Object payload) {
     try {
@@ -238,7 +238,7 @@ public class ThingArtifact extends Artifact {
 
     return request;
   }
-  
+
   /* Set a TD ObjectSchema payload */
   TDHttpRequest setObjectPayload(TDHttpRequest request, DataSchema schema, Object[] tags,
       Object[] payload) {
@@ -254,44 +254,43 @@ public class ThingArtifact extends Artifact {
 
     return request;
   }
-  
+
   /* Set a TD ArraySchema payload */
   TDHttpRequest setArrayPayload(TDHttpRequest request, DataSchema schema, Object[] payload) {
     request.setArrayPayload((ArraySchema) schema, Arrays.asList(payload));
     return request;
   }
-  
+
   @LINK
   public void onNotification(Notification notification) {
     log("The state of this ThingArtifact has changed: " + notification.getMessage());
-    
+
     String obsProp = notification.getMessage();
     String functor = obsProp.substring(0, obsProp.indexOf("("));
     String[] params = obsProp.substring(obsProp.indexOf("(") + 1, obsProp.length() - 1)
         .split(",");
-    
+
     if (this.hasObsPropertyByTemplate(functor, (Object[]) params)) {
       this.updateObsProperty(functor, (Object[]) params);
     } else {
       this.defineObsProperty(functor, (Object[]) params);
     }
   }
-  
+
   /* Registers for WebSub to an Yggdrasil node. This is not a generic implementation, but one
    * specific to Yggdrasil. */
   private void exposeWebSubIRIs(String url) {
     try {
       Header[] headers = Request.get(url).execute().returnResponse().getHeaders("Link");
-      
+
       // This current implementation is specific to Yggdrasil, not a general implementation
-      // TODO: 4 is for both WebSub and RDFSub
-      if (headers.length != 4) {
+      if (headers.length != 2) {
         return;
       }
-      
+
       Optional<String> hub = Optional.empty();
       Optional<String> topic = Optional.empty();
-      
+
       for (Header h : headers) {
         if (h.getValue().endsWith("rel=\"hub\"")) {
           hub = Optional.of(h.getValue().substring(1, h.getValue().indexOf('>')));
@@ -300,7 +299,7 @@ public class ThingArtifact extends Artifact {
           topic = Optional.of(h.getValue().substring(1, h.getValue().indexOf('>')));
         }
       }
-      
+
       if (hub.isPresent() && topic.isPresent()) {
         log("Found WebSub links: " + hub.get() + ", " + topic.get());
         defineObsProperty("websub", hub.get(), topic.get());
@@ -309,18 +308,18 @@ public class ThingArtifact extends Artifact {
       e.printStackTrace();
     }
   }
-  
+
   /* Matches the entire 2XX class */
   private boolean requestSucceeded(int statusCode) {
     return statusCode >= 200 && statusCode < 300;
   }
-  
+
   private void validateParameters(String semanticType, Object[] tags, Object[] payload) {
     if (tags.length > 0 && tags.length != payload.length) {
       failed("Illegal arguments: the lists of tags and action parameters should have equal length.");
     }
   }
-  
+
   private void readProperty(String semanticType, Optional<OpFeedbackParam<Object[]>> tags,
       OpFeedbackParam<Object[]> output) {
     PropertyAffordance property = getPropertyOrFail(semanticType);
@@ -339,7 +338,7 @@ public class ThingArtifact extends Artifact {
       }
     }
   }
-  
+
   /* Tries to retrieve a property first by semantic tag, then by name. Fails if none works. */
   private PropertyAffordance getPropertyOrFail(String propertyTag) {
     Optional<PropertyAffordance> property = td.getFirstPropertyBySemanticType(propertyTag);
@@ -354,7 +353,7 @@ public class ThingArtifact extends Artifact {
 
     return property.get();
   }
-  
+
   // TODO: Reading payloads of type object currently works with 2 limitations:
   // - only the first semantic tag is retrieved for object properties (one that is not a data schema)
   // - we cannot use nested objects with the current ThingArtifact API (needs a more elaborated
@@ -406,7 +405,7 @@ public class ThingArtifact extends Artifact {
         break;
     }
   }
-  
+
   @SuppressWarnings("unchecked")
   Object[] nestedListsToArrays(Collection<Object> data) {
     Object[] out = data.toArray();
@@ -419,21 +418,21 @@ public class ThingArtifact extends Artifact {
 
     return out;
   }
-  
-  private Optional<TDHttpResponse> executePropertyRequest(PropertyAffordance property, 
+
+  private Optional<TDHttpResponse> executePropertyRequest(PropertyAffordance property,
     String operationType, Object[] tags, Object[] payload) {
     Optional<Form> form = property.getFirstFormForOperationType(operationType);
-    
+
     if (!form.isPresent()) {
       // Should not happen (an exception will be raised by the TD library first)
       failed("Invalid TD: the property does not have a valid form.");
     }
-    
+
     DataSchema schema = property.getDataSchema();
-    
+
     return executeRequest(operationType, form.get(), Optional.of(schema), tags, payload);
   }
-  
+
   private Optional<TDHttpResponse> executeRequest(String operationType, Form form,
       Optional<DataSchema> schema, Object[] tags, Object[] payload) {
     if (schema.isPresent() && payload.length > 0) {
@@ -454,7 +453,7 @@ public class ThingArtifact extends Artifact {
       return issueRequest(request);
     }
   }
-  
+
   private Optional<TDHttpResponse> executeRequestPrimitivePayload(String operationType, Form form,
       DataSchema schema, Object payload) {
     TDHttpRequest request = new TDHttpRequest(form, operationType);
@@ -462,7 +461,7 @@ public class ThingArtifact extends Artifact {
 
     return issueRequest(request);
   }
-  
+
   private Optional<TDHttpResponse> executeRequestObjectPayload(String operationType, Form form,
       DataSchema schema, Object[] tags, Object[] payload) {
     if (schema.getDatatype() != DataSchema.OBJECT) {
@@ -475,7 +474,7 @@ public class ThingArtifact extends Artifact {
 
     return issueRequest(request);
   }
-  
+
   private Optional<TDHttpResponse> executeRequestArrayPayload(String operationType, Form form,
       DataSchema schema, Object[] payload) {
     if (schema.getDatatype() != DataSchema.ARRAY) {
@@ -488,18 +487,18 @@ public class ThingArtifact extends Artifact {
 
     return issueRequest(request);
   }
-  
+
   private Optional<TDHttpResponse> issueRequest(TDHttpRequest request) {
     Optional<SecurityScheme> scheme = td.getFirstSecuritySchemeByType(WoTSec.APIKeySecurityScheme);
-    
+
     if (scheme.isPresent() && apiKey.isPresent()) {
       request.setAPIKey((APIKeySecurityScheme) scheme.get(), apiKey.get());
     }
-    
+
     // Set a header with the id of the operating agent
     request.addHeader("X-Agent-WebID", WEBID_PREFIX + getCurrentOpAgentId().getAgentName());
     log("operating agent: " + getCurrentOpAgentId().getAgentName());
-    
+
     if (this.dryRun) {
       log(request.toString());
       return Optional.empty();
