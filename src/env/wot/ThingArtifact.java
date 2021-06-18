@@ -201,6 +201,58 @@ public class ThingArtifact extends Artifact {
     }
   }
 
+  @OPERATION
+  public void invokeAction(String actionTag, Object[] payload,OpFeedbackParam<Optional<String>> result) {
+    invokeAction(actionTag, new Object[0], payload,result);
+  }
+
+  @OPERATION
+  public void invokeAction(String semanticType,OpFeedbackParam<Optional<String>> result) {
+    invokeAction(semanticType, new Object[0], new Object[0],result);
+  }
+
+  @OPERATION
+  public void invokeAction(String actionTag, Object[] payloadTags, Object[] payload,OpFeedbackParam<Optional<String>> result) {
+    validateParameters(actionTag, payloadTags, payload);
+
+    Optional<ActionAffordance> action = td.getFirstActionBySemanticType(actionTag);
+
+    if (!action.isPresent()) {
+      action = td.getActionByName(actionTag);
+    }
+
+    if (action.isPresent()) {
+      Optional<Form> form = action.get().getFirstForm();
+
+      if (!form.isPresent()) {
+        // Should not happen (an exception will be raised by the TD library first)
+        failed("Invalid TD: the invoked action does not have a valid form.");
+      }
+
+      Optional<DataSchema> inputSchema = action.get().getInputSchema();
+      if (!inputSchema.isPresent() && payload.length > 0) {
+        failed("This type of action does not take any input: " + actionTag);
+      }
+
+      Optional<TDHttpResponse> response = executeRequest(TD.invokeAction, form.get(), inputSchema,
+        payloadTags, payload);
+      if (response.isPresent()){
+        TDHttpResponse tdHttpResponse=response.get();
+        Optional<String> responsePayload=tdHttpResponse.getPayload();
+        result.set(responsePayload);
+      }
+      else{
+        result.set(Optional.empty());
+      }
+
+      if (response.isPresent() && !requestSucceeded(response.get().getStatusCode())) {
+        failed("Status code: " + response.get().getStatusCode());
+      }
+    } else {
+      failed("Unknown action: " + actionTag);
+    }
+  }
+
   /**
    * CArtAgO operation that sets an authentication token (used with APIKeySecurityScheme).
    *
