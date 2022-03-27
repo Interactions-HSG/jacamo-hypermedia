@@ -6,6 +6,7 @@ bin/
 .classpath
 .project
 .idea/
+.vscode/
 
 # Ignore Gradle GUI config
 gradle-app.setting
