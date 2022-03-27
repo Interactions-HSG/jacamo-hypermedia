@@ -14,7 +14,17 @@ Clone this project with:
 git clone --recursive git@github.com:Interactions-HSG/jacamo-hypermedia.git
 ```
 
-Run `./gradlew`
+To build the library run (note: use the appropriate Gradle wrapper for your OS):
+
+```
+./gradlew test build
+```
+
+To start a sample JaCaMo agent run  (note: use the appropriate Gradle wrapper for your OS):
+
+```
+./gradlew --settings-file jacamo-settings.gradle
+```
 
 ## Mocking HTTP requests
 
@@ -30,4 +40,4 @@ docker run -v "$(pwd)"/mockserver/mockserver.json:/tmp/mockserver/mockserver.jso
 -d --rm --name mockserver -p 1080:1080 mockserver/mockserver
 ```
 
-The above command will run the Docker container in the background and will print the container ID. To stop the container: `docker stop CONTAINER_ID` 
+The above command will run the Docker container in the background and will print the container ID. To stop the container: `docker stop CONTAINER_ID`

@@ -9,11 +9,11 @@ td_url("https://raw.githubusercontent.com/Interactions-HSG/wot-td-java/feature/h
 
 /* Plans */
 
-+!start : td_url(Url) <- 
++!start : td_url(Url) <-
   .print("hello world.");
   // To also execute the requests, remove the second init parameter (dryRun flag).
   // When dryRun is set to true, the requests are printed (but not executed).
-  makeArtifact("forkliftRobot", "wot.ThingArtifact", [Url, true], ArtId);
+  makeArtifact("forkliftRobot", "ch.unisg.ics.interactions.jacamo.artifacts.wot.ThingArtifact", [Url, true], ArtId);
   .print("Artifact created!");
   // Write property of boolean type
   .print("Writing property: http://example.org/Status");
@@ -32,7 +32,7 @@ td_url("https://raw.githubusercontent.com/Interactions-HSG/wot-td-java/feature/h
   .println("Read value (if dry run, then <no-value>): ", LastCarryTags, ", ", LastCarryValue);
   // Invoke action with tagged nested lists (i.e., ObjectSchema payload)
   .print("Invoking action with object schema payload: http://example.org/CarryFromTo");
-  invokeAction("http://example.org/CarryFromTo", 
+  invokeAction("http://example.org/CarryFromTo",
     ["http://example.org/SourcePosition", "http://example.org/TargetPosition"],
     [[30, 50, 70], [30, 60, 70]]
   )[artifact_name("forkliftRobot")];

@@ -16,7 +16,7 @@ targetAngle(256). // ~90 degrees angle
 
 +!start : env_url(Url) <-
   .print("hello world.");
-  makeArtifact("notification-server", "yggdrasil.NotificationServerArtifact", ["localhost", 8081], _);
+  makeArtifact("notification-server", "ch.unisg.ics.interactions.jacamo.artifacts.yggdrasil.NotificationServerArtifact", ["localhost", 8081], _);
   start;
   !load_environment("building-61", Url);
   .wait(2000);
@@ -30,7 +30,7 @@ targetAngle(256). // ~90 degrees angle
   .print(Value, "...").
 
 +!moveBlock : true <-
-//  makeArtifact("armRobot", "tools.ThingArtifact", [Url, true], ArtId);
+//  makeArtifact("armRobot", "ch.unisg.ics.interactions.jacamo.artifacts.wot.ThingArtifact", [Url, true], ArtId);
 //  .print("Robot arm artifact created!");
 //  joinWorkspace("102",_);
 //  focusWhenAvailable("leubot1");

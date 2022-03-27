@@ -1,4 +1,4 @@
-package yggdrasil;
+package ch.unisg.ics.interactions.jacamo.artifacts.yggdrasil;
 
 import java.io.IOException;
 import java.util.AbstractQueue;

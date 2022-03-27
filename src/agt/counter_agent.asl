@@ -10,20 +10,20 @@ env_url("http://localhost:8085/environments/env2").
 
 +!start : env_url(Url) <-
   .print("hello world.");
-  makeArtifact("notification-server", "yggdrasil.NotificationServerArtifact", ["localhost", 8082], _);
+  makeArtifact("notification-server", "ch.unisg.ics.interactions.jacamo.artifacts.yggdrasil.NotificationServerArtifact", ["localhost", 8082], _);
   start;
   !load_environment("myenv", Url);
   focusWhenAvailable("wksp2");
   .print("Creating counter...");
   invokeAction("http://w3id.org/eve#MakeArtifact",
-    ["http://w3id.org/eve#ArtifactClass", "http://w3id.org/eve#ArtifactName"], 
+    ["http://w3id.org/eve#ArtifactClass", "http://w3id.org/eve#ArtifactName"],
     ["http://example.org/Counter", "c2"]
   )[artifact_name("wksp2")];
   focusWhenAvailable("c2");
   !countTo(3).
 
 +!countTo(0) : true .
-  
+
 +!countTo(X) : true <-
   .print(X, "...");
   invokeAction("http://example.org/Increment", [])[artifact_name("c2")];

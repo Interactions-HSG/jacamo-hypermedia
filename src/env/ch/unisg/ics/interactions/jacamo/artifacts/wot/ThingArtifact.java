@@ -1,4 +1,4 @@
-package wot;
+package ch.unisg.ics.interactions.jacamo.artifacts.wot;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,6 +16,7 @@ import cartago.Artifact;
 import cartago.LINK;
 import cartago.OPERATION;
 import cartago.OpFeedbackParam;
+import ch.unisg.ics.interactions.jacamo.artifacts.yggdrasil.Notification;
 import ch.unisg.ics.interactions.wot.td.ThingDescription;
 import ch.unisg.ics.interactions.wot.td.ThingDescription.TDFormat;
 import ch.unisg.ics.interactions.wot.td.affordances.ActionAffordance;
@@ -31,7 +32,6 @@ import ch.unisg.ics.interactions.wot.td.security.APIKeySecurityScheme;
 import ch.unisg.ics.interactions.wot.td.security.SecurityScheme;
 import ch.unisg.ics.interactions.wot.td.vocabularies.TD;
 import ch.unisg.ics.interactions.wot.td.vocabularies.WoTSec;
-import yggdrasil.Notification;
 
 /**
  * A CArtAgO artifact that can interpret a W3C WoT Thing Description (TD) and exposes the affordances

@@ -4,7 +4,7 @@
 
 +!load_environment(EnvName, EnvUrl) : true <-
   .print("Loading environment (entry point): ", EnvUrl);
-  makeArtifact(EnvName, "yggdrasil.ContainerArtifact", [EnvUrl, "workspace"], ArtId);
+  makeArtifact(EnvName, "ch.unisg.ics.interactions.jacamo.artifacts.yggdrasil.ContainerArtifact", [EnvUrl, "workspace"], ArtId);
   focusWhenAvailable(EnvName);
   !registerForWebSub(EnvName, ArtId).
 
@@ -16,7 +16,7 @@
   joinWorkspace(WorkspaceName, WorkspaceArtId);
   // Create a hypermedia WorkspaceArtifact for this workspace.
   // Used for some operations (e.g., create artifact).
-  makeArtifact(WorkspaceName, "yggdrasil.ContainerArtifact", [WorkspaceIRI, "artifact"], WkspArtId);
+  makeArtifact(WorkspaceName, "ch.unisg.ics.interactions.jacamo.artifacts.yggdrasil.ContainerArtifact", [WorkspaceIRI, "artifact"], WkspArtId);
   focusWhenAvailable(WorkspaceName);
   !registerForWebSub(WorkspaceName, WkspArtId).
 
@@ -24,7 +24,7 @@
 
 +artifact(ArtifactIRI, ArtifactName) : true <-
   .print("Discovered artifact (name: ", ArtifactName ,"): ", ArtifactIRI);
-  makeArtifact(ArtifactName, "wot.ThingArtifact", [ArtifactIRI, true], ArtID);
+  makeArtifact(ArtifactName, "ch.unisg.ics.interactions.jacamo.artifacts.wot.ThingArtifact", [ArtifactIRI, true], ArtID);
   focusWhenAvailable(ArtifactName);
   !registerForWebSub(ArtifactName, ArtID).
 

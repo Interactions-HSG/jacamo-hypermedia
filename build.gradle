@@ -1,31 +1,23 @@
-/*
-   Project jacamo_hypermedia
+apply plugin: 'java-library'
 
-   Gradle build file for JaCaMo Applications
-   June 05, 2020 - 18:44:14
-*/
+java {
+  sourceCompatibility = JavaVersion.VERSION_1_8
+  targetCompatibility = JavaVersion.VERSION_1_8
 
-defaultTasks 'run'
+  withJavadocJar()
+  withSourcesJar()
+}
 
-apply plugin: 'java'
-apply plugin: 'eclipse'
-
-version '1.0'
-group   'org.jacamo'
+version '0.0.1'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 repositories {
-    mavenCentral()
+    jcenter()
 
     maven { url "https://raw.github.com/jacamo-lang/mvn-repo/master" }
     maven { url 'https://jitpack.io' }
-    //maven { url "https://jade.tilab.com/maven/" }
-
-    flatDir {
-       dirs 'lib'
-    }
 }
 
 dependencies {
@@ -45,64 +37,10 @@ sourceSets {
     main {
         java {
             srcDir 'src/env'
-            srcDir 'src/agt'
-            srcDir 'src/org'
             srcDir 'src/test/java'
         }
         resources {
             srcDir 'src/resources'
         }
     }
-}
-
-task run (type: JavaExec, dependsOn: 'classes') {
-    group       ' JaCaMo'
-    description 'runs the JaCaMo application'
-    doFirst {
-        mkdir 'log'
-    }
-    main 'jacamo.infra.JaCaMoLauncher'
-    if(project.hasProperty('jcmFile')){
-        args jcmFile
-    } else {
-        args 'jacamo_hypermedia.jcm'
-    }
-    //args 'jacamo_hypermedia.jcm'
-    classpath sourceSets.main.runtimeClasspath
-}
-
-
-task uberJar(type: Jar, dependsOn: 'classes') {
-    group      ' JaCaMo'
-    description 'creates a single runnable jar file with all dependencies'
-
-    manifest {
-        attributes 'Main-Class': 'jacamo.infra.JaCaMoLauncher'
-    }
-    baseName = 'jacamo-jacamo_hypermedia' // the name must start with jacamo so that jacamo...jar is found in the classpath
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    from (project.projectDir.absolutePath) {
-        include '**/*.asl'
-        include '**/*.xml'
-        include '**/*.jcm'
-        include '*.properties'
-    }
-    from (project.buildDir.absolutePath + '/jcm') {
-        include '**/*'
-    }
-    with jar
-
-    doFirst {
-        copy {
-            from 'jacamo_hypermedia.jcm'
-            rename 'jacamo_hypermedia.jcm','default.jcm'
-            into project.buildDir.absolutePath + '/jcm'
-        }
-    }
-}
-
-clean {
-    delete 'bin'
-    delete 'build'
-    delete 'log'
 }
