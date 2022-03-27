@@ -24,10 +24,13 @@
 
 +artifact(ArtifactIRI, ArtifactName) : true <-
   .print("Discovered artifact (name: ", ArtifactName ,"): ", ArtifactIRI);
-  makeArtifact(ArtifactName, "wot.ThingArtifact", [ArtifactIRI], ArtID);
+  makeArtifact(ArtifactName, "wot.ThingArtifact", [ArtifactIRI, true], ArtID);
   focusWhenAvailable(ArtifactName);
   !registerForWebSub(ArtifactName, ArtID).
 
 +!registerForWebSub(ArtifactName, ArtID) : true <-
   ?websub(HubIRI, TopicIRI)[artifact_name(ArtID,_)];
   registerArtifactForNotifications(TopicIRI, ArtID, HubIRI).
+
+-!registerForWebSub(ArtifactName, ArtID) : true <-
+  .print("WebSub not available for artifact: ", ArtifactName).

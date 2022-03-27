@@ -2,7 +2,7 @@
 
 //Please register here for using the Phantom X Robot: https://app.swaggerhub.com/apis-docs/iomz/leubot/1.2#/user/addUser
 api_key("API-KEY").
-env_url("http://localhost:8080/environments/env1").
+env_url("https://yggdrasil.interactions.ics.unisg.ch/environments/61").
 
 //Check the default, lower and upper limits of the PhantomX joint parameters: https://github.com/Interactions-HSG/leubot
 sourceAngle(512). // ~180 degrees angle
@@ -18,7 +18,9 @@ targetAngle(256). // ~90 degrees angle
   .print("hello world.");
   makeArtifact("notification-server", "yggdrasil.NotificationServerArtifact", ["localhost", 8081], _);
   start;
-  !load_environment("myenv", Url).
+  !load_environment("building-61", Url);
+  .wait(2000);
+  !moveBlock.
 
 +count("3") : true <-
   .print("3... go!");
@@ -30,7 +32,7 @@ targetAngle(256). // ~90 degrees angle
 +!moveBlock : true <-
 //  makeArtifact("armRobot", "tools.ThingArtifact", [Url, true], ArtId);
 //  .print("Robot arm artifact created!");
-  joinWorkspace("wksp1",_);
+//  joinWorkspace("102",_);
 //  focusWhenAvailable("leubot1");
   .print("Set API token");
   !setAuthentication;
@@ -41,38 +43,38 @@ targetAngle(256). // ~90 degrees angle
 
 +!deliver : sourceAngle(Source) & targetAngle(Target) <-
   .print("Set base to " , Source);
-  invokeAction("http://example.org/SetBase", ["https://www.w3.org/2019/wot/json-schema#IntegerSchema"], [Source])[artifact_name("leubot1")];
+  invokeAction("https://ci.mines-stetienne.fr/kg/ontology#SetBase", ["https://www.w3.org/2019/wot/json-schema#IntegerSchema"], [Source])[artifact_name("leubot1")];
   !interval;
   .print("Set gripper to 512");
-  invokeAction("http://example.org/SetGripper", ["https://www.w3.org/2019/wot/json-schema#IntegerSchema"], [512])[artifact_name("leubot1")];
+  invokeAction("https://ci.mines-stetienne.fr/kg/ontology#SetGripper", ["https://www.w3.org/2019/wot/json-schema#IntegerSchema"], [512])[artifact_name("leubot1")];
   !interval;
   .print("Set wrist angle to 390");
-  invokeAction("http://example.org/SetWristAngle", ["https://www.w3.org/2019/wot/json-schema#IntegerSchema"], [390])[artifact_name("leubot1")];
+  invokeAction("https://ci.mines-stetienne.fr/kg/ontology#SetWristAngle", ["https://www.w3.org/2019/wot/json-schema#IntegerSchema"], [390])[artifact_name("leubot1")];
   !interval;
   .print("Set shoulder to 510");
-  invokeAction("http://example.org/SetShoulder", ["https://www.w3.org/2019/wot/json-schema#IntegerSchema"], [510])[artifact_name("leubot1")];
+  invokeAction("https://ci.mines-stetienne.fr/kg/ontology#SetShoulder", ["https://www.w3.org/2019/wot/json-schema#IntegerSchema"], [510])[artifact_name("leubot1")];
   !interval;
   .print("Set gripper to 400");
-  invokeAction("http://example.org/SetGripper", ["https://www.w3.org/2019/wot/json-schema#IntegerSchema"], [400])[artifact_name("leubot1")];
+  invokeAction("https://ci.mines-stetienne.fr/kg/ontology#SetGripper", ["https://www.w3.org/2019/wot/json-schema#IntegerSchema"], [400])[artifact_name("leubot1")];
   !interval;
   .print("Set shoulder to 400");
-  invokeAction("http://example.org/SetShoulder", ["https://www.w3.org/2019/wot/json-schema#IntegerSchema"], [400])[artifact_name("leubot1")];
+  invokeAction("https://ci.mines-stetienne.fr/kg/ontology#SetShoulder", ["https://www.w3.org/2019/wot/json-schema#IntegerSchema"], [400])[artifact_name("leubot1")];
   !interval;
   .print("Set base to " , Target);
-  invokeAction("http://example.org/SetBase", ["https://www.w3.org/2019/wot/json-schema#IntegerSchema"], [Target])[artifact_name("leubot1")];
+  invokeAction("https://ci.mines-stetienne.fr/kg/ontology#SetBase", ["https://www.w3.org/2019/wot/json-schema#IntegerSchema"], [Target])[artifact_name("leubot1")];
   !interval;
   .print("Set shoulder to 510");
-  invokeAction("http://example.org/SetShoulder", ["https://www.w3.org/2019/wot/json-schema#IntegerSchema"], [510])[artifact_name("leubot1")];
+  invokeAction("https://ci.mines-stetienne.fr/kg/ontology#SetShoulder", ["https://www.w3.org/2019/wot/json-schema#IntegerSchema"], [510])[artifact_name("leubot1")];
   !interval;
   .print("Set gripper to 512");
-  invokeAction("http://example.org/SetGripper", ["https://www.w3.org/2019/wot/json-schema#IntegerSchema"], [512])[artifact_name("leubot1")];
+  invokeAction("https://ci.mines-stetienne.fr/kg/ontology#SetGripper", ["https://www.w3.org/2019/wot/json-schema#IntegerSchema"], [512])[artifact_name("leubot1")];
   !interval;
   .print("Set gripper to 400");
-  invokeAction("http://example.org/SetShoulder", ["https://www.w3.org/2019/wot/json-schema#IntegerSchema"], [400])[artifact_name("leubot1")];
+  invokeAction("https://ci.mines-stetienne.fr/kg/ontology#SetShoulder", ["https://www.w3.org/2019/wot/json-schema#IntegerSchema"], [400])[artifact_name("leubot1")];
   !interval;
-  invokeAction("http://example.org/Reset", [])[artifact_name("leubot1")];
+  invokeAction("https://ci.mines-stetienne.fr/kg/ontology#Reset", [])[artifact_name("leubot1")];
 
-  readProperty("http://example.org/Posture", Types , Values)[artifact_name("leubot1")];
+  readProperty("https://ci.mines-stetienne.fr/kg/ontology#Posture", Types , Values)[artifact_name("leubot1")];
   .print(Values).
 
 +!interval : true <- .wait(3000).
