@@ -200,6 +200,44 @@ public class ThingArtifact extends Artifact {
       failed("Unknown action: " + actionTag);
     }
   }
+  
+  @OPERATION
+  public void invokeAction(String actionTag, Object[] payloadTags, Object[] payload, Object[] outputTags, OpFeedbackParam<Object[]> output) {
+    validateParameters(actionTag, payloadTags, payload);
+
+    Optional<ActionAffordance> action = td.getFirstActionBySemanticType(actionTag);
+
+    if (!action.isPresent()) {
+      action = td.getActionByName(actionTag);
+    }
+
+    if (action.isPresent()) {
+      Optional<Form> form = action.get().getFirstForm();
+
+      if (!form.isPresent()) {
+        // Should not happen (an exception will be raised by the TD library first)
+        failed("Invalid TD: the invoked action does not have a valid form.");
+      }
+
+      Optional<DataSchema> inputSchema = action.get().getInputSchema();
+      if (!inputSchema.isPresent() && payload.length > 0) {
+        failed("This type of action does not take any input: " + actionTag);
+      }
+
+      Optional<TDHttpResponse> response = executeRequest(TD.invokeAction, form.get(), inputSchema,
+        payloadTags, payload);
+
+      if (!dryRun & response.isPresent()) {
+        if (!requestSucceeded(response.get().getStatusCode())) {
+          failed("Status code: " + response.get().getStatusCode());
+        } else if (action.get().getOutputSchema().isPresent()){
+          readPayloadWithSchema(response.get(), action.get().getOutputSchema().get(), outputTags, output);
+        }
+      }
+    } else {
+      failed("Unknown action: " + actionTag);
+    }
+  }
 
   /**
    * CArtAgO operation that sets an authentication token (used with APIKeySecurityScheme).
