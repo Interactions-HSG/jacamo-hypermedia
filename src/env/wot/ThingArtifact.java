@@ -200,9 +200,9 @@ public class ThingArtifact extends Artifact {
       failed("Unknown action: " + actionTag);
     }
   }
-  
+
   @OPERATION
-  public void invokeAction(String actionTag, Object[] payloadTags, Object[] payload, Object[] outputTags, OpFeedbackParam<Object[]> output) {
+  public void invokeAction(String actionTag, Object[] payloadTags, Object[] payload, OpFeedbackParam<Object[]> outputTags, OpFeedbackParam<Object[]> output) {
     validateParameters(actionTag, payloadTags, payload);
 
     Optional<ActionAffordance> action = td.getFirstActionBySemanticType(actionTag);
@@ -231,7 +231,7 @@ public class ThingArtifact extends Artifact {
         if (!requestSucceeded(response.get().getStatusCode())) {
           failed("Status code: " + response.get().getStatusCode());
         } else if (action.get().getOutputSchema().isPresent()){
-          readPayloadWithSchema(response.get(), action.get().getOutputSchema().get(), outputTags, output);
+          readPayloadWithSchema(response.get(), action.get().getOutputSchema().get(), Optional.of(outputTags), output);
         }
       }
     } else {
