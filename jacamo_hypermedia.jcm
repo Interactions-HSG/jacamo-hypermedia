@@ -14,7 +14,10 @@
 
 mas jacamo_hypermedia {
 
-    //agent operator_agent
+    workspace room {
+
+            artifact lamp: hmas.ResourceArtifact("lamp-profile.ttl")
+        }
 
 }
 
