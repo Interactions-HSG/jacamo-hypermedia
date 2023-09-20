@@ -24,7 +24,7 @@
   hmas:recommendsAbility [ a process:BinaryStateHandler ] .
 
 <#toggle-spec> a sh:NodeShape;
-   sh:class hmas:ActionExecution, saref:ToggleCommand, saref:ToggleLight ;
+   sh:class hmas:ActionExecution, saref:ToggleCommand ;
    sh:property [
     sh:path prov:used ;
     sh:minCount 1;
