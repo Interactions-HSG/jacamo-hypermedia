@@ -45,6 +45,19 @@ public class ResourceArtifact extends Artifact {
     }
   }
 
+  /**
+   * CArtAgO operation for invoking an action on a Resource artifact based on its exposed signifiers.
+   * For example invokeAction("https://saref.etsi.org/core/ToggleCommand", ["https://saref.etsi.org/core/OnOffState"], [0])
+   * @param actionTag Either an IRI that identifies the action type, or the action's name.
+   * @param payloadTags A list of IRIs or object property names (used for object schema payloads).
+   * @param payload The payload to be issued when invoking the action.
+   */
+  public void invokeAction(String actionTag, Object[] payloadTags, Object[] payload) {
+
+
+  }
+
+
   private void informSRM(Set<String> actionTypes, List<String> recommendedContext, List<String> recommendedAbilities) {
 
     // Handle the signifier, e.g. to create observable properties of the preferred structure
@@ -54,7 +67,9 @@ public class ResourceArtifact extends Artifact {
     // However, my understanding is that no two observable properties should have the same name. Therefore,
     // the following is not viable.
     for (String actionType : actionTypes) {
-      ObsProperty pr = defineObsProperty("signifier", actionType, recommendedContext, recommendedAbilities);
+      Object[] contextArray = recommendedContext.toArray(new Object[recommendedContext.size()]);
+      Object[] abilitiesArray = recommendedAbilities.toArray(new Object[recommendedAbilities.size()]);
+      ObsProperty pr = defineObsProperty("signifier", actionType, contextArray, abilitiesArray);
       log("- New observable property: " + Arrays.toString(pr.getValues()));
     }
   }
@@ -135,7 +150,7 @@ public class ResourceArtifact extends Artifact {
         Optional<String> beliefContent = contextModel.filter(beliefSpec, SHACL.HAS_VALUE, null)
           .stream()
           .findFirst()
-          .map(statement -> statement.getObject().toString());
+          .map(statement -> statement.getObject().stringValue());
 
         // If the belief content is present, add it to the list of recommended beliefs
         if (beliefContent.isPresent()) {
