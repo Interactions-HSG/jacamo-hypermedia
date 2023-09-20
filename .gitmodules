@@ -1,0 +1,4 @@
+[submodule "hmas-java"]
+	path = hmas-java
+	url = git@github.com:danaivach/hmas-java.git
+	branch = feat/am-rwActionSpec
