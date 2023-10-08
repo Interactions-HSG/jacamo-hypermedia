@@ -24,7 +24,7 @@
 
 +artifact(ArtifactIRI, ArtifactName) : true <-
   .print("Discovered artifact (name: ", ArtifactName ,"): ", ArtifactIRI);
-  makeArtifact(ArtifactName, "wot.ThingArtifact", [ArtifactIRI, true], ArtID);
+  makeArtifact(ArtifactName, "wot.ThingArtifact", [ArtifactIRI], ArtID);
   focusWhenAvailable(ArtifactName);
   !registerForWebSub(ArtifactName, ArtID).
 
