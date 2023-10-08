@@ -27,7 +27,7 @@ repositories {
 }
 
 dependencies {
-    implementation group: 'org.jacamo', name: 'jacamo', version: '1.2.1'
+    implementation group: 'org.jacamo', name: 'jacamo', version: '0.9-SNAPSHOT'
     implementation 'com.github.interactions-hsg:wot-td-java:v0.1.2'
     implementation 'org.eclipse.rdf4j:rdf4j-runtime:3.2.1'
 
