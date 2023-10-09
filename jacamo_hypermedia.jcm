@@ -14,7 +14,16 @@
 
 mas jacamo_hypermedia {
 
-    agent hmas_agent
+    agent alice: hmas_agent.asl
+    agent bob: hmas_agent.asl {
+        ag-class: signifiers.SignifierResolutionMechanism1
+    }
+    agent carol: hmas_agent.asl {
+        ag-class: signifiers.SignifierResolutionMechanism2
+    }
+    agent david: hmas_agent.asl {
+        ag-class: signifiers.SignifierResolutionMechanism3
+    }
 
 }
 

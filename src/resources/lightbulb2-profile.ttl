@@ -1,0 +1,50 @@
+@prefix hmas: <https://purl.org/hmas/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix xs: <https://www.w3.org/2001/XMLSchema#> .
+@prefix hctl: <https://www.w3.org/2019/wot/hypermedia#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix htv: <http://www.w3.org/2011/http#> .
+@prefix saref: <https://saref.etsi.org/core/> .
+@prefix bdi: <http://example.org/bdi/> .
+@prefix process: <http://example.org/processes/> .
+@base <http://example.org> .
+
+<> a hmas:ResourceProfile ;
+   hmas:isProfileOf <#artifact> ;
+   hmas:exposesSignifier <#togglable> .
+
+<#artifact> a hmas:Artifact, saref:Lamp .
+
+<#togglable> a hmas:Signifier;
+  hmas:signifies <#toggle-spec> .
+
+<#toggle-spec> a sh:NodeShape;
+   sh:class hmas:ActionExecution, saref:ToggleCommand ;
+   sh:property [
+    sh:path prov:used ;
+    sh:minCount 1;
+    sh:maxCount 1 ;
+    sh:hasValue <#form>
+   ] ;
+   sh:property [
+     sh:path hmas:hasInput;
+     sh:qualifiedValueShape <#input-constraint> ;
+     sh:qualifiedMinCount 1 ;
+     sh:qualifiedMaxCount 1
+   ] .
+
+<#input-constraint> a sh:NodeShape ;
+   sh:class saref:OnOffState ;
+   sh:property [
+    sh:path saref:hasValue ;
+    sh:minCount 1;
+    sh:maxCount 1 ;
+    sh:datatype xs:integer
+] .
+
+<#form> a hctl:Form ;
+  hctl:hasTarget <https://lamp.example.org/state> ;
+  hctl:forContentType "application/lamp+json" ;
+  htv:methodName "PUT" .

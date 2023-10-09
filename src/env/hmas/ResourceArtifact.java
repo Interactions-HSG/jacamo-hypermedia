@@ -2,6 +2,7 @@ package hmas;
 
 import cartago.Artifact;
 import cartago.ObsProperty;
+import cartago.OPERATION;
 import ch.unisg.ics.interactions.hmas.interaction.io.ArtifactProfileGraphReader;
 import ch.unisg.ics.interactions.hmas.interaction.signifiers.Ability;
 import ch.unisg.ics.interactions.hmas.interaction.signifiers.ArtifactProfile;
@@ -52,9 +53,9 @@ public class ResourceArtifact extends Artifact {
    * @param payloadTags A list of IRIs or object property names (used for object schema payloads).
    * @param payload The payload to be issued when invoking the action.
    */
+  @OPERATION
   public void invokeAction(String actionTag, Object[] payloadTags, Object[] payload) {
-
-
+    System.out.println("Invoking action: " + actionTag + " with payload: " + Arrays.toString(payload));
   }
 
 

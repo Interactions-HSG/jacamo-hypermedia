@@ -18,13 +18,10 @@
 <#artifact> a hmas:Artifact, saref:Lamp .
 
 <#togglable> a hmas:Signifier;
-  hmas:signifies <#toggle-spec> ;
-  hmas:recommendsContext <#empty-room-constraint> ;
-  hmas:recommendsAbility [ a bdi:BDIReasoner ] ;
-  hmas:recommendsAbility [ a process:BinaryStateHandler ] .
+  hmas:signifies <#toggle-spec> .
 
 <#toggle-spec> a sh:NodeShape;
-   sh:class hmas:ActionExecution, saref:ToggleCommand ;
+   sh:class hmas:ActionExecution, saref:TurnOn ; # caution: this action does not exists
    sh:property [
     sh:path prov:used ;
     sh:minCount 1;
@@ -51,22 +48,4 @@
   hctl:hasTarget <https://lamp.example.org/state> ;
   hctl:forContentType "application/lamp+json" ;
   htv:methodName "PUT" .
-
- <#empty-room-constraint> a sh:NodeShape ;
-  sh:class hmas:ResourceProfile ;
-  sh:property [
-    sh:path hmas:isProfileOf ;
-    sh:qualifiedValueShape <#agent-constraint> ;
-    sh:qualifiedMinCount "1"^^xs:int;
-    sh:qualifiedMaxCount "1"^^xs:int
-  ] .
-
-<#agent-constraint> a sh:NodeShape ;
-  sh:class hmas:Agent ;
-  sh:property [
-    sh:path bdi:hasBelief ;
-    sh:minCount "1"^^xs:int;
-    sh:maxCount "1"^^xs:int;
-    sh:hasValue "room(empty)"
-  ] .
 
