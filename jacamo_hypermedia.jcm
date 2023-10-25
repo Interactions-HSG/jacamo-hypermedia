@@ -14,7 +14,7 @@
 
 mas jacamo_hypermedia {
 
-    agent operator_agent
+    agent hackathon_agent
 
 }
 
