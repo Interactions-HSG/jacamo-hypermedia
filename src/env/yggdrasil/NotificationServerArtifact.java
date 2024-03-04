@@ -54,9 +54,16 @@ public class NotificationServerArtifact extends Artifact {
   }
 
   @OPERATION
-  void registerArtifactForNotifications(String artifactIRI, ArtifactId artifactId, String hubIRI) {
+  void registerArtifactForWebSub(String artifactIRI, ArtifactId artifactId, String hubIRI) {
     artifactRegistry.put(artifactIRI, artifactId);
     sendSubscribeRequest(hubIRI, artifactIRI);
+  }
+
+  @OPERATION
+  void registerArtifactForFocus(String workspaceIRI, String artifactIRI, ArtifactId artifactId,
+      String artifactName) {
+    artifactRegistry.put(artifactIRI, artifactId);
+    sendFocusRequest(workspaceIRI, artifactName);
   }
 
   @OPERATION
@@ -87,6 +94,7 @@ public class NotificationServerArtifact extends Artifact {
     while (httpServerRunning) {
       while (!notifications.isEmpty()) {
         Notification n = notifications.poll();
+
         ArtifactId artifactId = artifactRegistry.get(n.getEntityIRI());
 
         if (artifactId != null) {
@@ -114,6 +122,29 @@ public class NotificationServerArtifact extends Artifact {
               + "\"hub.mode\" : \"subscribe\","
               + "\"hub.topic\" : \"" + artifactIRI + "\","
               + "\"hub.callback\" : \"" + callbackUri + "\""
+              + "}"), "application/json")
+          .send();
+
+      if (response.getStatus() != HttpStatus.SC_OK) {
+        log("Request failed: " + response.getStatus());
+      }
+
+      client.stop();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  private void sendFocusRequest(String workspaceIRI, String artifactName) {
+    HttpClient client = new HttpClient();
+    try {
+      client.start();
+
+      ContentResponse response = client.POST(workspaceIRI + "/focus")
+          .header("X-Agent-WebID", "http://localhost:8080/agents/" + this.getCurrentOpAgentId().getAgentName())
+          .content(new StringContentProvider("{"
+              + "\"artifactName\" : \"" + artifactName + "\","
+              + "\"callbackIri\" : \"" + callbackUri + "\""
               + "}"), "application/json")
           .send();
 

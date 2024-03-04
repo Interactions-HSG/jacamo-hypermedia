@@ -1,9 +1,8 @@
 /* Initial beliefs and rules */
 
+entry_url("http://localhost:8080/workspaces/61").
 //Please register here for using the Phantom X Robot: https://app.swaggerhub.com/apis-docs/iomz/leubot/1.2#/user/addUser
-api_key("API-KEY").
-//env_url("https://yggdrasil.interactions.ics.unisg.ch/environments/61").
-env_url("http://localhost:8080/environments/env1").
+// api_key("API-KEY").
 
 //Check the default, lower and upper limits of the PhantomX joint parameters: https://github.com/Interactions-HSG/leubot
 sourceAngle(512). // ~180 degrees angle
@@ -15,17 +14,17 @@ targetAngle(256). // ~90 degrees angle
 
 /* Plans */
 
-+!start : env_url(Url) <-
++!start : entry_url(Url) <-
   .print("hello world.");
   makeArtifact("notification-server", "yggdrasil.NotificationServerArtifact", ["localhost", 8081], _);
   start;
-  !load_environment("myenv", Url).
+  !load_environment("61", Url).
   // .wait(2000);
   // !moveBlock.
 
 +count("3") : true <-
-  .print("3... go!");
-  !moveBlock.
+  .print("3... go!").
+  // !moveBlock.
 
 +count(Value) : true <-
   .print(Value, "...").

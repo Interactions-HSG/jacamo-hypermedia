@@ -43,7 +43,7 @@ import yggdrasil.Notification;
  *
  */
 public class ThingArtifact extends Artifact {
-  private static final String WEBID_PREFIX = "http://hyperagents.org/";
+  private static final String WEBID_PREFIX = "http://localhost:8080/agents/";
 
   protected ThingDescription td;
   protected boolean dryRun;

@@ -1,6 +1,6 @@
 /* Initial beliefs and rules */
 
-env_url("http://localhost:8085/environments/env2").
+entry_url("http://localhost:8080/workspaces/61").
 
 /* Initial goals */
 
@@ -8,22 +8,22 @@ env_url("http://localhost:8085/environments/env2").
 
 /* Plans */
 
-+!start : env_url(Url) <-
++!start : entry_url(Url) <-
   .print("hello world.");
   makeArtifact("notification-server", "yggdrasil.NotificationServerArtifact", ["localhost", 8082], _);
   start;
-  !load_environment("myenv", Url);
-  focusWhenAvailable("wksp2");
+  !load_environment("61", Url);
+  .print("Environment loaded...");
   .print("Creating counter...");
-  invokeAction("http://w3id.org/eve#MakeArtifact",
-    ["http://w3id.org/eve#ArtifactClass", "http://w3id.org/eve#ArtifactName"], 
+  invokeAction("makeArtifact",
+    ["artifactClass", "artifactName"],
     ["http://example.org/Counter", "c2"]
-  )[artifact_name("wksp2")];
-  focusWhenAvailable("c2");
+  )[artifact_name("103")];
+  .wait(2000);
   !countTo(3).
 
 +!countTo(0) : true .
-  
+
 +!countTo(X) : true <-
   .print(X, "...");
   invokeAction("http://example.org/Increment", [])[artifact_name("c2")];
